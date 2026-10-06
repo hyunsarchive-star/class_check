@@ -11,10 +11,10 @@
 
 /* ---------- 컬렉션과 권한 ---------- */
 const ALL_COLS = ["students", "assignments", "submissions", "notices", "exams", "retakes", "records",
-  "ideas", "ideaAnswers", "todos", "todoDone", "pins", "pinsPlain", "secret", "backupInfo", "photos", "backups", "links", "dayoff", "absent"];
-const ADMIN_READ = new Set(["records", "pinsPlain", "secret", "backups", "backupInfo"]); // 선생님만 읽기
+  "ideas", "ideaAnswers", "todos", "todoDone", "pins", "pinsPlain", "secret", "backupInfo", "photos", "backups", "links", "dayoff", "absent", "dms", "dmDone", "tchk", "seen"];
+const ADMIN_READ = new Set(["records", "pinsPlain", "secret", "backups", "backupInfo", "tchk"]); // 선생님만 읽기
 const PUBLIC_READ = new Set(["students", "pins"]);                                       // 로그인 전에도 읽기 (이름 고르기용)
-const STUDENT_WRITE = new Set(["submissions", "photos", "notices", "retakes", "ideaAnswers", "todoDone", "absent"]);
+const STUDENT_WRITE = new Set(["submissions", "photos", "notices", "retakes", "ideaAnswers", "todoDone", "absent", "dmDone", "seen"]);
 const NO_SYNC = new Set(["photos", "backups"]);                                          // 크기가 커서 필요할 때만 불러와요
 const ID_RE = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
 const MAX_BYTES = 1900000;
@@ -149,6 +149,8 @@ async function studentAllowed(env, no, op, col, id, data) {
       return op === "update" && onlyKeys(data, ["hearts"]) && heartsOnlyMine(data.hearts, no); // 친구 글에는 좋아요만
     }
     case "photos": return own;
+    case "seen": return id === String(no) && op !== "delete" && onlyKeys(data, ["no", "links", "todo"]) && (data.no === undefined || +data.no === no); // 새 글 확인 시각
+    case "dmDone": return own && (op === "delete" || (data && +data.no === no && data.by === "s")); // 개별 알림: 자기 것만 '했어요'
     case "absent": return (op === "delete" || (data && /^\d{4}-\d{2}-\d{2}__\d+$/.test(id) && +data.no === +id.split("__")[1])) && await isAnyChecker(env, no); // 검사 도우미만 결석 처리
     case "ideaAnswers": return own && (op === "delete" || +data.no === no);
     case "notices": return own && op === "update" && onlyKeys(data, ["read"]);

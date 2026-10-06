@@ -502,6 +502,28 @@ span.ovb{cursor:default}
 .pk:disabled{opacity:.55;cursor:not-allowed}
 .w-abs{color:var(--ink);background:color-mix(in srgb, var(--muted) 16%, var(--surface));font-family:var(--f-body);font-size:12px;font-weight:700}
 .dd-abs{background:color-mix(in srgb, var(--muted) 16%, var(--surface));color:var(--ink);font-family:var(--f-body);font-size:13px;font-weight:700}
+.tkadd{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tkadd #tkD{width:auto;flex:0 0 auto}.tkadd #tkT{flex:1 1 220px;min-width:0}
+.tkwrap{overflow:auto;max-height:72vh;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tktbl{border-collapse:separate;border-spacing:0;font-size:14px}
+.tktbl th,.tktbl td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:0;background:var(--surface)}
+.tktbl thead th{position:sticky;top:0;z-index:2;background:var(--bg)}
+.tktbl .tks{position:sticky;left:0;z-index:1;text-align:left;padding:6px 12px;white-space:nowrap;font-weight:500;min-width:96px}
+.tktbl .tks b{display:inline-block;min-width:20px;color:var(--muted)}
+.tktbl thead .tkcorner{z-index:3;background:var(--bg);font-size:12px;color:var(--muted)}
+.tktbl .tkpad{border-right:0;width:100%}
+.tkhb{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px;width:84px;box-sizing:border-box;text-align:center}
+.tkhb:hover{background:var(--accent-soft)}.tkhb:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.tkd{font-size:11px;color:var(--muted)}.tkt{font-weight:700;font-size:13px;line-height:1.3;word-break:keep-all;overflow-wrap:anywhere}
+.tkn{font-size:11px;color:var(--muted);font-weight:600}.tkn.tkfull{color:var(--st-done)}
+.tkclosed .tkhb{opacity:.55}
+.tkc{all:unset;cursor:pointer;display:grid;place-items:center;width:84px;height:34px;font-weight:800;font-size:17px;color:var(--st-done-ink);box-sizing:border-box}
+.tkc:hover{background:var(--accent-soft)}.tkc.on{background:var(--st-done)}.tkc:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.tktbl tbody tr:hover .tks{background:var(--accent-soft)}
+.dmcard{background:var(--st-done-soft);color:var(--st-done);border:1.5px solid color-mix(in srgb, var(--st-done) 45%, var(--surface))}
+.dmcard .lkname{color:var(--ink)}
+.dmto{font-size:12px;font-weight:700;opacity:.9}
+.dmgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.dmrow .tdcat{color:var(--st-done)}
 .boardhead{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-start;justify-content:space-between}
 /* 파스텔 딱지 */
 .rchip,.numtag{background:color-mix(in srgb, var(--tc) 24%, var(--surface))!important;color:color-mix(in srgb, var(--tc) 70%, var(--ink))!important;border:1px solid color-mix(in srgb, var(--tc) 35%, var(--surface))}
@@ -521,11 +543,12 @@ span.ovb{cursor:default}
     <div class="who" id="who"></div>
   </header>
   <nav class="tabs" role="tablist" id="tabs">
-    <button class="tab" role="tab" data-tab="todo" aria-selected="false">ToDoList</button>
-    <button class="tab" role="tab" data-tab="links" aria-selected="false">각종 링크함</button>
+    <button class="tab" role="tab" data-tab="todo" aria-selected="false">ToDoList <span id="tdBadge"></span></button>
+    <button class="tab" role="tab" data-tab="links" aria-selected="false">링크함/알림장 <span id="lkBadge"></span></button>
     <button class="tab" role="tab" data-tab="hw" aria-selected="true">개인과제</button>
     <button class="tab" role="tab" data-tab="board" aria-selected="false">공유보드</button>
     <button class="tab" role="tab" data-tab="idea" aria-selected="false">생각모으기</button>
+    <button class="tab" role="tab" data-tab="tchk" aria-selected="false" hidden>체크리스트</button>
     <button class="tab" role="tab" data-tab="exam" aria-selected="false">수행평가 <span id="retakeBadge"></span></button>
     <button class="tab" role="tab" data-tab="records" aria-selected="false" hidden>누가기록</button>
     <button class="tab" role="tab" data-tab="students" aria-selected="false" hidden>학생 관리</button>
@@ -541,7 +564,7 @@ span.ovb{cursor:default}
 <script>
 (() => {
 /* ---------- state ---------- */
-const COLS = ["students","assignments","submissions","notices","exams","retakes","records","ideas","ideaAnswers","todos","todoDone","pins","pinsPlain","secret","backupInfo","links","dayoff","absent"];
+const COLS = ["students","assignments","submissions","notices","exams","retakes","records","ideas","ideaAnswers","todos","todoDone","pins","pinsPlain","secret","backupInfo","links","dayoff","absent","dms","dmDone","tchk","seen"];
 const S = {}; COLS.forEach(c => S[c] = {}); S.backups = {};
 let db = null, isTeacher = true, loaded = false; // isTeacher: '선생님 로그인' 링크를 보여 줄지 (웹에서는 누구나 비밀번호로 시도해요)
 const ui = { subj:"전체", tab:"hw", role:"student", me:null, selA:null, selE:null, sheet:null, confirm:null };
@@ -568,7 +591,7 @@ const ST = { wait:{t:"미제출",c:"s-wait"}, sent:{t:"제출함 · 확인 전",
 const SUBJ = ["국어","수학","사회","미술","체육","도덕","실과"];
 const GR = [["매우잘함","g1"],["잘함","g2"],["보통","g3"],["노력요함","g4"]];
 const cutOf = e => e.cut || {a:Math.round(e.max*.9), b:Math.round(e.max*.8), c:Math.round(e.max*.7)};
-const gradeOf = (e,v) => { if(v===undefined||v===null||v==="") return null; const c=cutOf(e); v=+v; return v>=c.a?0:v>=c.b?1:v>=c.c?2:3; };
+const gradeOf = (e,v) => { if(v===undefined||v===null||v==="") return null; const c=cutOf(e); v=+v; return v>c.a?0:v>c.b?1:v>c.c?2:3; };
 const ST_STUDENT = { wait:{t:"아직 안 냈어요",c:"s-wait"}, sent:{t:"제출 완료 · 선생님 확인 중",c:"s-sent"}, done:{t:"선생님 확인 완료",c:"s-done"}, back:{t:"반려됨 · 다시 내 주세요",c:"s-wait"} };
 
 /* ---------- store ---------- */
@@ -584,17 +607,22 @@ async function putPhoto(id,src){ photoCache[id]=src; if(!db) return true; try{ a
 /* ---------- render scheduling (don't clobber typing) ---------- */
 let pendMain=false, pendSheet=false;
 const typing = root => { const a=document.activeElement; return a && root.contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && a.type!=="file"; };
-function refresh(){ if($("#bigCloud")) drawIdea(); if(ui.bigHw) renderHwBig(); if(typing($("#main"))) pendMain=true; else renderMain(); if(ui.sheet && (ui.sheet.type==="sub" || ui.sheet.type==="my" || (ui.sheet.type==="post" && !ui.postEdit) || ui.sheet.type==="holi" || ui.sheet.type==="abs")){ if(typing($("#sheetRoot"))) pendSheet=true; else renderSheet(); } renderChrome(); }
+function refresh(){ if($("#bigCloud")) drawIdea(); if(ui.bigHw) renderHwBig(); if(typing($("#main"))) pendMain=true; else renderMain(); if(ui.sheet && (ui.sheet.type==="sub" || ui.sheet.type==="my" || (ui.sheet.type==="post" && !ui.postEdit) || ui.sheet.type==="holi" || ui.sheet.type==="abs" || ui.sheet.type==="dmview")){ if(typing($("#sheetRoot"))) pendSheet=true; else renderSheet(); } renderChrome(); }
 document.addEventListener("focusout", () => setTimeout(()=>{ if(pendMain && !typing($("#main"))){pendMain=false;renderMain();} if(pendSheet && !typing($("#sheetRoot"))){pendSheet=false;renderSheet();} },0));
 
 /* ---------- chrome ---------- */
 function renderChrome(){
   if(loaded) applyGate();
-  document.querySelectorAll('.tab[data-tab="students"],.tab[data-tab="records"]').forEach(b=>b.hidden = ui.role!=="teacher");
-  if(ui.role!=="teacher" && (ui.tab==="students"||ui.tab==="records")) ui.tab="hw";
+  document.querySelectorAll('.tab[data-tab="students"],.tab[data-tab="records"],.tab[data-tab="tchk"]').forEach(b=>b.hidden = ui.role!=="teacher");
+  if(ui.role!=="teacher" && (ui.tab==="students"||ui.tab==="records"||ui.tab==="tchk")) ui.tab="hw";
   document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.tab===ui.tab)));
   const pend = Object.values(S.retakes).filter(r=>r.status==="pending").length;
   $("#retakeBadge").innerHTML = ui.role==="teacher" && pend ? `<span class="badge">${pend}</span>` : "";
+  const nb = ui.role==="student" && S.students[ui.me] ? newCounts(+ui.me) : {links:0,todo:0};
+  $("#lkBadge").innerHTML = nb.links && ui.tab!=="links" ? `<span class="badge">${nb.links}</span>` : "";
+  $("#tdBadge").innerHTML = nb.todo && ui.tab!=="todo" ? `<span class="badge">${nb.todo}</span>` : "";
+  if(nb.links && ui.tab==="links") markSeen(+ui.me,"links");
+  if(nb.todo && ui.tab==="todo") markSeen(+ui.me,"todo");
   const w=$("#who"); let h="";
   if(!db) h += `<span class="demo">체험 모드 · 서버 연결 안 됨</span>`;
   if(ui.role==="teacher"){ h += `<span class="pill">선생님 화면</span>`; if(isTeacher) h+=`<button class="linkbtn" data-act="asStudent">학생 화면으로 보기</button>`; }
@@ -608,7 +636,8 @@ function renderMain(){
   const m=$("#main"); if(loaded) applyGate();
   if(!loaded){ m.innerHTML=`<div class="panel empty"><h3>불러오는 중…</h3></div>`; return; }
   if(ui.role==="student" && !S.students[ui.me]) { m.innerHTML = pickView(); return; }
-  if((ui.tab==="students"||ui.tab==="records") && ui.role!=="teacher") ui.tab="hw";
+  if((ui.tab==="students"||ui.tab==="records"||ui.tab==="tchk") && ui.role!=="teacher") ui.tab="hw";
+  if(ui.tab==="tchk") { m.innerHTML = tchkView(); return; }
   if(ui.tab==="records") { m.innerHTML = recordsView(); return; }
   if(ui.tab==="students") { m.innerHTML = studentsView(); return; }
   if(ui.tab==="todo") { m.innerHTML = todoView(); return; }
@@ -900,14 +929,18 @@ function todoStudent(){
   const ckHtml = myChecks.map(t=>{ const ins=instancesOf(t); return `<section class="panel ckpanel" style="--tc:${tdColor(t.cat)}"><div class="ahead"><button class="btn sm" data-act="openAbs" style="order:2">🤒 결석 처리</button><div><h2>🔍 검사 도우미 · ${esc(t.title)}</h2><p class="muted" style="margin:4px 0 0">선생님이 ${isChecker(t,me).until?`${md(parseD(isChecker(t,me).until))}까지 `:""}확인을 맡겼어요.${activeCheckers(t).length>1?` 함께 맡은 친구: ${activeCheckers(t).filter(c=>c.no!==me).map(c=>`${c.no}번 ${esc(S.students[c.no]?.name||"")}`).join(", ")}`:""} 친구들 공책을 보고 칸을 눌러 체크해 주세요.</p></div></div>${t.type==="daily"?dailyMatrix(t,ins,true):weeklyMatrix(t,ins,true)}</section>`; }).join("");
   const lateHtml = overdue.length ? `<section class="panel latepanel"><div class="ahead"><div><h2>⏰ 밀린 일 <span class="latecount">${overdue.length}</span></h2><p class="muted" style="margin:4px 0 0">기한이 지났어요. 얼른 해서 체크해 주세요!</p></div></div><div class="tdlist">${overdue.map(row).join("")}</div></section>`
     : `<section class="panel latepanel ok"><h2>⏰ 밀린 일</h2><p class="lateok">밀린 것이 없어요! 🎉</p></section>`;
-  return `<div class="list">${ckHtml}${lateHtml}<section class="panel"><div class="ahead"><div><h2>해야 할 일</h2><p class="muted" style="margin:4px 0 0">${todo.length?`${todo.length}개 남았어요`:"지금 할 일을 모두 끝냈어요! 👏"}${passUsed?` · 면제권 ${passUsed}번 사용`:""}</p></div>${tdLegend()}</div>
-    <div class="tdlist">${todo.map(row).join("") || `<div class="empty" style="padding:20px"><h3>남은 할 일이 없어요</h3></div>`}</div></section>
+  const dms = myDms(me); const dmTodo = dms.filter(m=>!dmDoneOf(m.id,me)), dmDone = dms.filter(m=>dmDoneOf(m.id,me));
+  const dmRow = m => { const d=dmDoneOf(m.id,me); return `<div class="tdrow dmrow${d?" isdone":""}" style="--tc:var(--st-done)"><span class="tdblk"></span><div class="tdmain"><div class="tdcat">💌 선생님 개별 알림${isNew(m)&&!d?` <span class="newtag">NEW</span>`:""}</div><b>${esc(m.title)}</b><span class="muted">${lkDate(m.date)}${m.note?` · ${esc(m.note)}`:""}</span></div>${d?`<span class="dd dd-ok">했어요</span>${d.by==="t"?`<span class="muted tdby">선생님 확인 ✓</span>`:`<button class="btn ghost sm" data-act="dmUndo" data-id="${m.id}">되돌리기</button>`}`:`<span></span><span class="tdbtns"><button class="btn ok-o sm" data-act="dmDo" data-id="${m.id}">✓ 했어요</button></span>`}</div>`; };
+  const nTodo = todo.length + dmTodo.length;
+  return `<div class="list">${ckHtml}${lateHtml}<section class="panel"><div class="ahead"><div><h2>해야 할 일</h2><p class="muted" style="margin:4px 0 0">${nTodo?`${nTodo}개 남았어요`:"지금 할 일을 모두 끝냈어요! 👏"}${passUsed?` · 면제권 ${passUsed}번 사용`:""}</p></div>${tdLegend()}</div>
+    <div class="tdlist">${dmTodo.map(dmRow).join("")}${todo.map(row).join("") || (dmTodo.length?"":`<div class="empty" style="padding:20px"><h3>남은 할 일이 없어요</h3></div>`)}</div></section>
+    ${dmDone.length?`<section class="panel"><h2>💌 한 개별 알림 <span class="muted">${dmDone.length}</span></h2><div class="tdlist">${dmDone.slice(0,20).map(dmRow).join("")}</div></section>`:""}
     ${doneSection(me, done)}</div>`;
 }
 const tdLegend = () => `<div class="legend">${TD_CATS.map(c=>`<span class="tdlg" style="--tc:${tdColor(c)}">${c}</span>`).join("")}</div>`;
 /* 교사 · 이번 주 한눈에 보기 (오늘하루 · 독서록 · 주제글쓰기) */
 const WK_ORDER = ["오늘하루 작성","독서록 제출","주제글쓰기 제출"];
-const tdViewBar = () => `<div class="subtabs" role="group" aria-label="보기"><button class="stab" aria-pressed="${ui.tdView!=="week"}" data-act="tdView" data-v="list">📋 할 일 목록</button><button class="stab" aria-pressed="${ui.tdView==="week"}" data-act="tdView" data-v="week">🗓 주간 한눈에 보기</button><span class="spacer" style="flex:1"></span><button class="stab" data-act="openHoli">🏖 휴일 설정</button><button class="stab" data-act="openAbs">🤒 결석 처리</button></div>`;
+const tdViewBar = () => `<div class="subtabs" role="group" aria-label="보기"><button class="stab" aria-pressed="${ui.tdView!=="week"&&ui.tdView!=="dm"}" data-act="tdView" data-v="list">📋 할 일 목록</button><button class="stab" aria-pressed="${ui.tdView==="week"}" data-act="tdView" data-v="week">🗓 주간 한눈에 보기</button><button class="stab" aria-pressed="${ui.tdView==="dm"}" data-act="tdView" data-v="dm">💌 개별 알림</button><span class="spacer" style="flex:1"></span><button class="stab" data-act="openHoli">🏖 휴일 설정</button><button class="stab" data-act="openAbs">🤒 결석 처리</button></div>`;
 function weekOverview(){
   const off = ui.tdWeek||0; const mon = addDays(mondayOf(today0()), 7*off); const sun = addDays(mon,6); const wk = ymd(mon);
   const list = students();
@@ -939,6 +972,7 @@ function weekOverview(){
     <div class="tablewrap"><table class="matrix wkov"><thead><tr><th class="c-no" rowspan="2">번호</th><th class="c-nm" rowspan="2">이름</th>${head1}<th rowspan="2">합계</th></tr><tr>${head2}</tr></thead><tbody>${rows}</tbody><tfoot><tr><td class="c-no"></td><td class="c-nm">완료</td>${foot}<td></td></tr></tfoot></table></div>`;
 }
 function todoTeacher(){
+  if(ui.tdView==="dm") return dmView();
   if(ui.tdView==="week") return `<section class="panel"><div class="ahead"><div><h2>ToDoList · 주간 한눈에 보기</h2><p class="muted" style="margin:4px 0 0">이 주의 오늘하루 · 독서록 · 주제글쓰기 제출을 학생별로 한 번에 봐요. 칸을 눌러 바로 확인할 수 있어요.</p></div><button class="btn primary" data-act="newTodo">＋ 할 일 보내기</button></div>${tdViewBar()}${weekOverview()}</section>`;
   const all = todoList(); const N = students().length;
   const head = `<div class="ahead"><div><h2>ToDoList</h2><p class="muted" style="margin:4px 0 0">보낸 할 일은 학생 화면에 바로 나타나요. 줄을 누르면 학생별로 했는지 확인할 수 있어요.</p></div><button class="btn primary" data-act="newTodo">＋ 할 일 보내기</button></div>${tdViewBar()}`;
@@ -1030,15 +1064,54 @@ function checkerCtl(t){
 }
 const tdActions = t => `<div class="actions">${t.type!=="once"?`<button class="btn" data-act="tdStop" data-id="${t.id}">${t.endedAt?"다시 보내기":t.type==="daily"?"⏹ 오늘까지만":"⏹ 이번 주까지만"}</button>`:""}<button class="btn" data-act="editTodo" data-id="${t.id}">수정</button>${ui.confirm===`delTd_${t.id}`?`<button class="btn warn" data-act="tdDel" data-id="${t.id}">정말 삭제</button><button class="btn ghost" data-act="cancelConfirm">취소</button>`:`<button class="btn ghost" data-act="tdAskDel" data-id="${t.id}">삭제</button>`}</div>`;
 
-/* 각종 링크함 */
+/* 새 글 숫자 알림 (학생) */
+function seenAt(no,key){ const v=(S.seen||{})[String(no)]?.[key]; const floor=Date.now()-2*86400000; const t=v?new Date(v).getTime():0; return Math.max(t,floor); }
+const after = (x,t) => x && x.createdAt && new Date(x.createdAt).getTime() > t;
+function newCounts(no){
+  const tl=seenAt(no,"links"), tt=seenAt(no,"todo");
+  const links = Object.values(S.links||{}).filter(l=>after(l,tl)).length;
+  const todo = Object.values(S.todos||{}).filter(t=>!t.endedAt && after(t,tt)).length + myDms(no).filter(m=>after(m,tt) && !dmDoneOf(m.id,no)).length;
+  return {links,todo};
+}
+const seenBusy = {};
+async function markSeen(no,key){ if(seenBusy[key]) return; seenBusy[key]=true; const id=String(no); const cur=(S.seen||{})[id];
+  const at=new Date().toISOString(); let ok=false; try{ ok = cur ? await patch("seen",id,{[key]:at}) : await put("seen",id,{no,[key]:at}); } finally { seenBusy[key]=!ok; } }
+/* 링크함/알림장 */
 const lkDate = s => { const d=parseD(s); return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}. (${WDN[d.getDay()]})`; };
 const linkList = () => Object.values(S.links||{}).sort((a,b)=>(b.date||"").localeCompare(a.date||"") || (b.createdAt||"").localeCompare(a.createdAt||""));
 function parseLinks(txt){ return String(txt||"").split(/\n/).map(l=>l.trim()).filter(Boolean).map(l=>{ const m=l.split(/\s*\|\s*/); const url=safeUrl(m.length>1?m.slice(1).join("|"):m[0]); return url?{label:m.length>1?m[0]:"",url}:null; }).filter(Boolean); }
 function linksView(){
   const T = ui.role==="teacher"; const list = linkList();
-  const head = `<div class="ahead"><div><h2>각종 링크함</h2><p class="muted" style="margin:4px 0 0">${T?"보낸 링크는 학생 화면에 알림장처럼 바로 나타나요.":"선생님이 보낸 수업 링크예요. 눌러서 들어가 보세요."}</p></div>${T?`<button class="btn primary" data-act="newLink">＋ 링크 보내기</button>`:""}</div>`;
-  if(!list.length) return `<section class="panel">${head}<div class="empty"><h3>아직 받은 링크가 없어요</h3><p>${T?"수업에 쓸 링크를 보내면 학생들에게 카드로 보여요.":"선생님이 링크를 보내면 여기에 나타나요."}</p>${T?`<button class="btn primary" data-act="newLink">첫 링크 보내기</button>`:""}</div></section>`;
-  return `<section class="panel">${head}<div class="lkgrid">${list.map(l=>`<button class="lkcard" data-act="openLink" data-id="${l.id}">${isNew(l)?`<span class="newtag lknew">NEW</span>`:""}<span class="lkdate">${lkDate(l.date)}</span><span class="lkname">${esc(l.title)}</span>${(l.items||[]).length>1?`<span class="lkcount">링크 ${(l.items||[]).length}개</span>`:""}</button>`).join("")}</div></section>`;
+  const head = `<div class="ahead"><div><h2>링크함/알림장</h2><p class="muted" style="margin:4px 0 0">${T?"올린 글과 링크는 학생 화면에 바로 나타나요. 링크 없이 알림장 글만 올려도 돼요.":"선생님이 올린 알림장과 수업 링크예요. 눌러서 확인해 보세요."}</p></div>${T?`<button class="btn primary" data-act="newLink">＋ 글·링크 올리기</button>`:""}</div>`;
+  if(!list.length) return `<section class="panel">${head}<div class="empty"><h3>아직 올라온 글이 없어요</h3><p>${T?"알림장이나 수업에 쓸 링크를 올리면 학생들에게 카드로 보여요.":"선생님이 글을 올리면 여기에 나타나요."}</p>${T?`<button class="btn primary" data-act="newLink">첫 글 올리기</button>`:""}</div></section>`;
+  return `<section class="panel">${head}<div class="lkgrid">${list.map(l=>`<button class="lkcard" data-act="openLink" data-id="${l.id}">${isNew(l)?`<span class="newtag lknew">NEW</span>`:""}<span class="lkdate">${lkDate(l.date)}</span><span class="lkname">${esc(l.title)}</span>${(l.items||[]).length>1?`<span class="lkcount">링크 ${(l.items||[]).length}개</span>`:!(l.items||[]).length?`<span class="lkcount">📝 알림장</span>`:""}</button>`).join("")}</div></section>`;
+}
+/* 개별 알림 */
+const dmList = () => Object.values(S.dms||{}).sort((a,b)=>(b.date||"").localeCompare(a.date||"") || (b.createdAt||"").localeCompare(a.createdAt||""));
+const dmDoneOf = (id,no) => (S.dmDone||{})[`${id}__${no}`];
+const myDms = me => dmList().filter(m=>(m.to||[]).map(Number).includes(me));
+function dmView(){
+  const list = dmList();
+  const cards = list.map(m=>{ const to=(m.to||[]).map(Number); const n=to.filter(no=>dmDoneOf(m.id,no)).length;
+    return `<button class="lkcard dmcard" data-act="openDm" data-id="${m.id}">${isNew(m)?`<span class="newtag lknew">NEW</span>`:""}<span class="lkdate">${lkDate(m.date)}</span><span class="lkname">${esc(m.title)}</span><span class="dmto">${to.length===1?`${to[0]}번 ${esc(S.students[to[0]]?.name||"")}`:`${to.length}명`} · 완료 ${n}/${to.length}</span></button>`; }).join("");
+  return `<section class="panel"><div class="ahead"><div><h2>ToDoList · 개별 알림</h2><p class="muted" style="margin:4px 0 0">골라서 보낸 알림은 그 학생의 ‘해야 할 일’에 떠요. 학생이 했다고 표시하면 여기서 확인할 수 있어요.</p></div><button class="btn primary" data-act="newDm">＋ 개별 알림 보내기</button></div>${tdViewBar()}
+    ${list.length?`<div class="lkgrid">${cards}</div>`:`<div class="empty"><h3>아직 보낸 개별 알림이 없어요</h3><p>예: “받아쓰기 다시 보기”, “상담 신청서 내기”처럼 몇 명에게만 보낼 일을 보내 보세요.</p><button class="btn primary" data-act="newDm">첫 알림 보내기</button></div>`}</section>`;
+}
+/* 교사 체크리스트 */
+const tchkList = () => Object.values(S.tchk||{}).sort((a,b)=>(a.createdAt||"").localeCompare(b.createdAt||""));
+function tchkView(){
+  const list = students(); const all = tchkList(); const closedN = all.filter(c=>c.closed).length;
+  const cols = ui.tchkAll ? all : all.filter(c=>!c.closed);
+  const head = cols.map(c=>{ const n=list.filter(st=>c.marks?.[st.no]).length; const full=list.length && n===list.length;
+    return `<th class="tkh${c.closed?" tkclosed":""}"><button class="tkhb" data-act="tchkEdit" data-id="${c.id}" title="눌러서 고치기"><span class="tkd">${c.date?md(parseD(c.date)):""}</span><span class="tkt">${esc(c.title)}</span><span class="tkn${full?" tkfull":""}">${n}/${list.length}</span></button></th>`; }).join("");
+  const rows = list.map(st=>`<tr><th class="tks"><b>${st.no}</b> ${esc(st.name)}</th>${cols.map(c=>{ const on=!!c.marks?.[st.no]; return `<td><button class="tkc${on?" on":""}" data-act="tchkTog" data-id="${c.id}" data-no="${st.no}" aria-pressed="${on}" aria-label="${st.no}번 ${esc(st.name)} ${esc(c.title)}">${on?"✓":""}</button></td>`; }).join("")}<td class="tkpad"></td></tr>`).join("");
+  return `<div class="list"><section class="panel"><div class="ahead"><div><h2>교사 체크리스트</h2><p class="muted" style="margin:4px 0 0">선생님만 보여요. 확인할 일을 가로로 적어 두고, 칸을 눌러 ✓ 표시해요.</p></div>
+    ${closedN?`<button class="btn ghost sm" data-act="tchkShowAll">${ui.tchkAll?"끝난 항목 숨기기":`끝난 항목 보기 (${closedN})`}</button>`:""}</div>
+    <form id="fTchk" class="tkadd"><input class="inp" type="date" id="tkD" value="${ymd(today0())}" aria-label="날짜"><input class="inp" id="tkT" maxlength="30" required placeholder="확인할 일 (예: 가정통신문 회신, 우유 신청서)"><button class="btn primary" type="submit">＋ 추가</button></form>
+    ${!list.length?`<div class="empty" style="padding:20px"><h3>학생 관리에서 명단을 먼저 등록해 주세요</h3></div>`:
+      `<div class="tkwrap"><table class="tktbl"><thead><tr><th class="tks tkcorner">번호 · 이름</th>${head}<th class="tkpad"></th></tr></thead><tbody>${rows}</tbody></table></div>
+      ${cols.length?"":`<p class="muted" style="text-align:center;margin:14px 0 0">위 칸에 확인할 일을 적고 ＋ 추가를 누르면 세로줄이 생겨요.</p>`}`}
+  </section></div>`;
 }
 /* 생각모으기 */
 const normW = w => String(w||"").trim().replace(/\s+/g," ").replace(/[.,!?~·…"'“”‘’]+$/g,"");
@@ -1210,9 +1283,9 @@ function renderSheet(){
     <label class="f" for="eU">단원 제목<input class="inp" id="eU" required maxlength="60" value="${esc(e.unit||e.title||"")}" placeholder="예: 2. 비례식과 비례배분"></label>
     <div class="frow"><label class="f" for="eD">평가일<input class="inp" id="eD" type="date" value="${esc(e.date||"")}"></label><label class="f" for="eM">만점<input class="inp" id="eM" type="number" min="1" value="${esc(e.max||100)}" required></label></div>
     <div class="f" style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:500">평가척도 점수 구간<div class="cuts">
-      <div class="cut g1"><b>매우잘함</b><div class="r"><input id="cA" type="number" min="0" step="0.5" value="${c.a}" aria-label="매우잘함 최저 점수">점 이상</div></div>
-      <div class="cut g2"><b>잘함</b><div class="r"><input id="cB" type="number" min="0" step="0.5" value="${c.b}" aria-label="잘함 최저 점수">점 이상</div></div>
-      <div class="cut g3"><b>보통</b><div class="r"><input id="cC" type="number" min="0" step="0.5" value="${c.c}" aria-label="보통 최저 점수">점 이상</div></div>
+      <div class="cut g1"><b>매우잘함</b><div class="r"><input id="cA" type="number" min="0" step="0.5" value="${c.a}" aria-label="매우잘함 기준 점수">점 초과</div></div>
+      <div class="cut g2"><b>잘함</b><div class="r"><input id="cB" type="number" min="0" step="0.5" value="${c.b}" aria-label="잘함 기준 점수">점 초과</div></div>
+      <div class="cut g3"><b>보통</b><div class="r"><input id="cC" type="number" min="0" step="0.5" value="${c.c}" aria-label="보통 기준 점수">점 초과</div></div>
       <div class="cut g4"><b>노력요함</b><div class="r" id="cD">${c.c}점 미만</div></div></div></div>
     <button class="btn primary" type="submit">${s.id?"저장":"추가"}</button>
     ${s.id ? (ui.confirm==="delE" ? `<div class="confirm"><span>이 수행평가와 점수를 모두 지울까요? 되돌릴 수 없어요.</span><button class="btn ghost" type="button" data-act="cancelDelE">취소</button><button class="btn warn" type="button" data-act="delE">지우기</button></div>` : `<button class="btn ghost" type="button" data-act="askDelE">이 수행평가 삭제</button>`) : ""}</form>`; }
@@ -1261,18 +1334,42 @@ function renderSheet(){
       <label class="f" for="abR">사유 (선택)<input class="inp" id="abR" maxlength="20" value="${esc(ui.abReason||"")}" placeholder="예: 병결, 체험학습"></label>
       <button class="btn primary" type="submit">결석으로 저장</button></form>
     <div class="list"><b>결석 기록 <span class="muted">${as.length}</span></b>${as.length?as.slice(0,40).map(a=>`<div class="dline"><span class="dlt"><b>${lkDate(a.date)}</b> ${a.no}번 ${esc(S.students[a.no]?.name||"")}</span><span class="dld">${esc(a.reason||"")}</span><span class="dld">${a.by==="c"?`${a.checker}번 도우미`:""}</span><button class="linkbtn dlundo" data-act="delDayoff" data-col="${a._col}" data-id="${a._id}">지우기</button></div>`).join(""):`<p class="muted" style="margin:0">아직 없어요.</p>`}</div>`; }
-  if(s.type==="linkform"){ const l = s.id ? S.links[s.id] : {date: ymd(today0())};
-    body = `<div class="sheet-h"><h2>${s.id?"링크 고치기":"링크 보내기"}</h2><button class="x" data-act="close" aria-label="닫기">×</button></div>
-    <form id="fLink" class="list"><div class="frow"><label class="f" for="lkD">보내는 날짜<input class="inp" type="date" id="lkD" required value="${esc(l.date||ymd(today0()))}"></label>
-      <label class="f" for="lkT">이름 (카드에 보여요)<input class="inp" id="lkT" required maxlength="40" value="${esc(l.title||"")}" placeholder="예: 3단원 사회 영상"></label></div>
-      <label class="f" for="lkU">링크 (한 줄에 하나씩)<textarea class="inp" id="lkU" required placeholder="https://youtu.be/...&#10;활동지 | https://docs.google.com/...">${esc((l.items||[]).map(it=>it.label?`${it.label} | ${it.url}`:it.url).join("\n"))}</textarea></label>
-      <span class="muted" style="font-size:12px;margin-top:-6px">링크 앞에 "이름 |"을 붙이면 학생 화면에 그 이름으로 보여요. 예: 활동지 | https://...</span>
-      <label class="f" for="lkN">안내 (선택)<textarea class="inp" id="lkN" style="min-height:70px" placeholder="예: 영상을 보고 활동지 2번까지 풀어 오세요.">${esc(l.note||"")}</textarea></label>
+  if(s.type==="tchkform"){ const c=S.tchk?.[s.id]; if(!c){ closeSheet(); return; } const n=students().filter(st=>c.marks?.[st.no]).length;
+    body = `<div class="sheet-h"><h2>체크리스트 항목</h2><button class="x" data-act="close" aria-label="닫기">×</button></div>
+    <form id="fTchkEdit" class="list"><div class="frow"><label class="f" for="tkeD">날짜<input class="inp" type="date" id="tkeD" value="${esc(c.date||"")}"></label>
+      <label class="f" for="tkeT">확인할 일<input class="inp" id="tkeT" required maxlength="30" value="${esc(c.title)}"></label></div>
+      <p class="muted" style="margin:0">지금 ${n}/${students().length}명 체크했어요.</p>
+      <div class="actions"><button class="btn" type="button" data-act="tchkFill" data-id="${c.id}">모두 체크</button><button class="btn ghost" type="button" data-act="tchkClear" data-id="${c.id}">모두 지우기</button>
+        <button class="btn ghost" type="button" data-act="tchkClose" data-id="${c.id}">${c.closed?"다시 보이기":"끝난 항목으로 숨기기"}</button></div>
+      <button class="btn primary" type="submit">저장</button>
+      ${ui.confirm==="delTchk" ? `<div class="confirm"><span>이 항목과 체크 표시를 모두 지울까요?</span><button class="btn ghost" type="button" data-act="cancelDelTchk">취소</button><button class="btn warn" type="button" data-act="delTchk" data-id="${c.id}">지우기</button></div>` : `<button class="btn ghost" type="button" data-act="askDelTchk">이 항목 삭제</button>`}</form>`; }
+  if(s.type==="dmform"){ const m = s.id ? S.dms[s.id] : {date: ymd(today0()), to:[]}; if(!ui.dmSel) ui.dmSel=(m.to||[]).map(Number);
+    body = `<div class="sheet-h"><h2>${s.id?"개별 알림 고치기":"💌 개별 알림 보내기"}</h2><button class="x" data-act="close" aria-label="닫기">×</button></div>
+    <form id="fDm" class="list"><div class="frow"><label class="f" for="dmD">보내는 날짜<input class="inp" type="date" id="dmD" required value="${esc(ui.dmDate||m.date||ymd(today0()))}"></label>
+      <label class="f" for="dmT">알림 (학생 할 일에 보여요)<input class="inp" id="dmT" required maxlength="60" value="${esc(ui.dmTitle??m.title??"")}" placeholder="예: 받아쓰기 틀린 낱말 다시 쓰기"></label></div>
+      <label class="f" for="dmN">자세한 안내 (선택)<input class="inp" id="dmN" maxlength="120" value="${esc(ui.dmNote??m.note??"")}" placeholder="예: 내일 아침까지 선생님 책상에 내요."></label>
+      <div class="f" style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:500">받는 학생 <span>${ui.dmSel.length?`${ui.dmSel.length}명 선택`:"한 명 이상 골라 주세요"} · <button type="button" class="linkbtn" data-act="dmAll">${ui.dmSel.length===students().length?"모두 해제":"모두 선택"}</button></span>
+        <div class="pickrow">${students().map(st=>`<button type="button" class="pk" aria-pressed="${ui.dmSel.includes(st.no)}" data-act="dmPick" data-no="${st.no}"><b>${st.no}</b> ${esc(st.name)}</button>`).join("")}</div></div>
       <button class="btn primary" type="submit">${s.id?"저장":"보내기"}</button>
-      ${s.id ? (ui.confirm==="delLink" ? `<div class="confirm"><span>이 링크를 지울까요? 학생 화면에서도 사라져요.</span><button class="btn ghost" type="button" data-act="cancelDelLink">취소</button><button class="btn warn" type="button" data-act="delLink" data-id="${s.id}">지우기</button></div>` : `<button class="btn ghost" type="button" data-act="askDelLink">이 링크 삭제</button>`) : ""}</form>`; }
+      ${s.id ? (ui.confirm==="delDm" ? `<div class="confirm"><span>이 알림을 지울까요? 학생 화면에서도 사라져요.</span><button class="btn ghost" type="button" data-act="cancelDelDm">취소</button><button class="btn warn" type="button" data-act="delDm" data-id="${s.id}">지우기</button></div>` : `<button class="btn ghost" type="button" data-act="askDelDm">이 알림 삭제</button>`) : ""}</form>`; }
+  if(s.type==="dmview"){ const m=S.dms[s.id]; if(!m){ closeSheet(); return; } const to=(m.to||[]).map(Number).sort((a,b)=>a-b); const n=to.filter(no=>dmDoneOf(m.id,no)).length;
+    body = `<div class="sheet-h"><div><div class="lkdate" style="font-size:14px">${lkDate(m.date)}</div><h2>${esc(m.title)}</h2></div><button class="x" data-act="close" aria-label="닫기">×</button></div>
+    ${m.note?`<div class="box">${esc(m.note)}</div>`:""}
+    <div class="ahead"><b>받은 학생 · 완료 ${n}/${to.length}</b><span class="muted" style="font-size:12px">칸을 누르면 완료 / 아직을 바꿀 수 있어요</span></div>
+    <div class="dmgrid">${to.map(no=>{ const d=dmDoneOf(m.id,no); return `<button class="card ${d?"s-done":"s-wait"}" data-act="dmToggle" data-id="${m.id}" data-no="${no}"><span class="no">${no}</span><span><span class="nm">${esc(S.students[no]?.name||"")}</span><span class="sub">${d?`${d.by==="t"?"선생님 확인":"했어요"} · ${fmt(d.at)}`:"아직"}</span></span></button>`; }).join("")}</div>
+    <div class="actions"><button class="btn" data-act="editDm" data-id="${m.id}">수정 · 받는 학생 바꾸기</button></div>`; }
+  if(s.type==="linkform"){ const l = s.id ? S.links[s.id] : {date: ymd(today0())};
+    body = `<div class="sheet-h"><h2>${s.id?"글 고치기":"글·링크 올리기"}</h2><button class="x" data-act="close" aria-label="닫기">×</button></div>
+    <form id="fLink" class="list"><div class="frow"><label class="f" for="lkD">보내는 날짜<input class="inp" type="date" id="lkD" required value="${esc(l.date||ymd(today0()))}"></label>
+      <label class="f" for="lkT">이름 (카드에 보여요)<input class="inp" id="lkT" required maxlength="40" value="${esc(l.title||"")}" placeholder="예: 3단원 사회 영상 / 10월 6일 알림장"></label></div>
+      <label class="f" for="lkU">링크 (선택 · 한 줄에 하나씩)<textarea class="inp" id="lkU" placeholder="https://youtu.be/...&#10;활동지 | https://docs.google.com/...">${esc((l.items||[]).map(it=>it.label?`${it.label} | ${it.url}`:it.url).join("\n"))}</textarea></label>
+      <span class="muted" style="font-size:12px;margin-top:-6px">링크 앞에 "이름 |"을 붙이면 학생 화면에 그 이름으로 보여요. 예: 활동지 | https://...</span>
+      <label class="f" for="lkN">내용 · 알림장 (선택)<textarea class="inp" id="lkN" style="min-height:110px" placeholder="예: 1. 내일 준비물: 색연필&#10;2. 영상을 보고 활동지 2번까지 풀어 오세요.">${esc(l.note||"")}</textarea></label>
+      <button class="btn primary" type="submit">${s.id?"저장":"보내기"}</button>
+      ${s.id ? (ui.confirm==="delLink" ? `<div class="confirm"><span>이 글을 지울까요? 학생 화면에서도 사라져요.</span><button class="btn ghost" type="button" data-act="cancelDelLink">취소</button><button class="btn warn" type="button" data-act="delLink" data-id="${s.id}">지우기</button></div>` : `<button class="btn ghost" type="button" data-act="askDelLink">이 글 삭제</button>`) : ""}</form>`; }
   if(s.type==="linkview"){ const l=S.links[s.id]; if(!l){ closeSheet(); return; }
     body = `<div class="sheet-h"><div><div class="lkdate" style="font-size:14px">${lkDate(l.date)}</div><h2>${esc(l.title)}</h2></div><button class="x" data-act="close" aria-label="닫기">×</button></div>
-    ${l.note?`<div class="box">${esc(l.note)}</div>`:""}
+    ${l.note?`<div class="box" style="white-space:pre-wrap">${esc(l.note)}</div>`:""}
     <div class="lklinks">${(l.items||[]).map((it,k)=>{ const id=ytId(it.url); let host=""; try{ host=new URL(it.url).hostname.replace(/^www\./,""); }catch(e){}
       return `<a class="lklink" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer"><span class="lkic">${id?"▶":"🔗"}</span><span class="lktx"><b>${esc(it.label||(id?"YouTube 영상":host)||"링크 "+(k+1))}</b><span>${esc(it.url)}</span></span><span class="lkgo">열기 ↗</span></a>`; }).join("")}</div>
     ${ui.role==="teacher"?`<div class="actions"><button class="btn" data-act="editLink" data-id="${l.id}">수정</button></div>`:""}`; }
@@ -1389,12 +1486,32 @@ document.addEventListener("click", async ev => {
     case "openAbs": ui.absSel=[]; ui.abDate=null; ui.abEnd=""; ui.abReason=""; openSheet({type:"abs"}); break;
     case "absPick": { const i=ui.absSel.indexOf(no); if(i>=0) ui.absSel.splice(i,1); else ui.absSel.push(no); ui.abReason=$("#abR")?.value||ui.abReason; renderSheet(); break; }
     case "delDayoff": { if(await del(t.dataset.col||"dayoff",id)) { toast("지웠어요."); renderSheet(); renderMain(); } break; }
+    case "tchkTog": { const c=S.tchk?.[id]; if(!c) break; await patch("tchk",id,{marks:{[no]: c.marks?.[no] ? null : true}}); break; }
+    case "tchkEdit": ui.confirm=null; openSheet({type:"tchkform",id}); break;
+    case "tchkShowAll": ui.tchkAll=!ui.tchkAll; renderMain(); break;
+    case "tchkFill": { const marks={}; students().forEach(st=>marks[st.no]=true); if(await patch("tchk",id,{marks})) { renderSheet(); toast("모두 체크했어요."); } break; }
+    case "tchkClear": { const c=S.tchk?.[id]; const marks={}; Object.keys(c?.marks||{}).forEach(k=>marks[k]=null); if(await patch("tchk",id,{marks})) { renderSheet(); toast("체크를 모두 지웠어요."); } break; }
+    case "tchkClose": { const c=S.tchk?.[id]; if(!c) break; if(await patch("tchk",id,{closed:!c.closed})){ closeSheet(); toast(c.closed?"다시 보이게 했어요.":"끝난 항목으로 숨겼어요."); } break; }
+    case "askDelTchk": ui.confirm="delTchk"; renderSheet(); break;
+    case "cancelDelTchk": ui.confirm=null; renderSheet(); break;
+    case "delTchk": ui.confirm=null; closeSheet(); if(await del("tchk",id)) toast("항목을 지웠어요."); break;
+    case "newDm": ui.confirm=null; ui.dmSel=null; ui.dmDate=null; ui.dmTitle=null; ui.dmNote=null; openSheet({type:"dmform"}); setTimeout(()=>$("#dmT")?.focus(),30); break;
+    case "editDm": ui.confirm=null; ui.dmSel=null; ui.dmDate=null; ui.dmTitle=null; ui.dmNote=null; openSheet({type:"dmform",id}); break;
+    case "openDm": openSheet({type:"dmview",id}); break;
+    case "dmPick": { ui.dmDate=$("#dmD")?.value; ui.dmTitle=$("#dmT")?.value; ui.dmNote=$("#dmN")?.value; const i=ui.dmSel.indexOf(no); if(i>=0) ui.dmSel.splice(i,1); else ui.dmSel.push(no); renderSheet(); break; }
+    case "dmAll": { ui.dmDate=$("#dmD")?.value; ui.dmTitle=$("#dmT")?.value; ui.dmNote=$("#dmN")?.value; ui.dmSel = ui.dmSel.length===students().length ? [] : students().map(st=>st.no); renderSheet(); break; }
+    case "askDelDm": ui.confirm="delDm"; renderSheet(); break;
+    case "cancelDelDm": ui.confirm=null; renderSheet(); break;
+    case "delDm": { ui.confirm=null; closeSheet(); for(const k of Object.keys(S.dmDone||{})) if(k.startsWith(id+"__")) await del("dmDone",k); if(await del("dms",id)) toast("알림을 지웠어요."); break; }
+    case "dmToggle": { const k=`${id}__${no}`; if(dmDoneOf(id,no)) await del("dmDone",k); else await put("dmDone",k,{id,no,by:"t",at:new Date().toISOString()}); renderSheet(); break; }
+    case "dmDo": { if(await put("dmDone",`${id}__${+ui.me}`,{id,no:+ui.me,by:"s",at:new Date().toISOString()})) toast("잘했어요! 선생님께 알려 드렸어요."); break; }
+    case "dmUndo": { if(await del("dmDone",`${id}__${+ui.me}`)) toast("해야 할 일로 되돌렸어요."); break; }
     case "newLink": ui.confirm=null; openSheet({type:"linkform"}); setTimeout(()=>$("#lkT")?.focus(),30); break;
     case "editLink": ui.confirm=null; openSheet({type:"linkform",id}); break;
     case "openLink": openSheet({type:"linkview",id}); break;
     case "askDelLink": ui.confirm="delLink"; renderSheet(); break;
     case "cancelDelLink": ui.confirm=null; renderSheet(); break;
-    case "delLink": { ui.confirm=null; closeSheet(); if(await del("links",id)) toast("링크를 지웠어요."); break; }
+    case "delLink": { ui.confirm=null; closeSheet(); if(await del("links",id)) toast("글을 지웠어요."); break; }
     case "confirmTodo": { const n=await confirmKeys(pendingKeys(r=>r.tid===id)); toast(`${n}개를 한 번에 확인했어요.`); break; }
     case "confirmWeek": { const mon=addDays(mondayOf(today0()),7*(ui.tdWeek||0)); const wk=ymd(mon), sun=ymd(addDays(mon,6));
       const n=await confirmKeys(pendingKeys(r=>{ const td=S.todos[r.tid]; if(!td||!WK_ORDER.includes(td.cat)||td.type==="once") return false; return td.type==="daily" ? (r.period>=wk && r.period<=sun) : r.period===wk; })); toast(`${n}개를 한 번에 확인했어요.`); break; }
@@ -1549,10 +1666,17 @@ document.addEventListener("submit", async ev => {
     let n=0;
     for(const no of [...ui.absSel].sort((a,b)=>a-b)) for(const date of days){ if(await put("absent",`${date}__${no}`,{type:"absent",date,no,reason,by: ui.role==="teacher"?"t":"c", ...(ui.role==="teacher"?{}:{checker:+ui.me}),at:new Date().toISOString()})) n++; }
     const who=ui.absSel.length; ui.absSel=[]; ui.abReason=""; ui.abEnd=""; renderSheet(); renderMain(); toast(days.length>1 ? `${who}명을 ${lkDate(days[0])}부터 ${lkDate(days[days.length-1])}까지 ${days.length}일 결석으로 처리했어요.` : `${who}명을 ${lkDate(days[0])} 결석으로 처리했어요.`); }
+  if(f.id==="fTchk"){ const title=$("#tkT").value.trim(), date=$("#tkD").value; if(!title) return; const id=uid();
+    if(await put("tchk",id,{id,title,date,marks:{},createdAt:new Date().toISOString()})){ renderMain(); setTimeout(()=>{ const w=$(".tkwrap"); if(w) w.scrollLeft=w.scrollWidth; $("#tkT")?.focus(); },30); toast("항목을 추가했어요."); } }
+  if(f.id==="fTchkEdit"){ const id=ui.sheet.id; const title=$("#tkeT").value.trim(); if(!title) return; if(await patch("tchk",id,{title,date:$("#tkeD").value})){ closeSheet(); toast("저장했어요."); } }
+  if(f.id==="fDm"){ const sid=ui.sheet.id; const date=$("#dmD").value, title=$("#dmT").value.trim(), note=$("#dmN").value.trim(); const to=[...(ui.dmSel||[])].sort((a,b)=>a-b);
+    if(!date||!title) return; if(!to.length){ toast("받을 학생을 한 명 이상 골라 주세요."); return; }
+    if(sid){ if(await patch("dms",sid,{date,title,note,to})){ ui.dmSel=null; closeSheet(); toast("알림을 고쳤어요."); } }
+    else { const id=uid(); if(await put("dms",id,{id,date,title,note,to,createdAt:new Date().toISOString()})){ ui.dmSel=null; closeSheet(); renderMain(); toast(`${to.length}명에게 알림을 보냈어요.`); } } }
   if(f.id==="fLink"){ const sid=ui.sheet.id; const items=parseLinks($("#lkU").value); const title=$("#lkT").value.trim(), date=$("#lkD").value, note=$("#lkN").value.trim();
-    if(!title||!date) return; if(!items.length){ toast("올바른 링크 주소를 한 개 이상 넣어 주세요."); return; }
-    if(sid){ if(await patch("links",sid,{title,date,note,items})){ closeSheet(); toast("링크를 고쳤어요."); } }
-    else { const id=uid(); if(await put("links",id,{id,title,date,note,items,createdAt:new Date().toISOString()})){ closeSheet(); renderMain(); toast("학생들에게 링크를 보냈어요."); } } }
+    if(!title||!date) return; const rawN=$("#lkU").value.split(/\n/).map(x=>x.trim()).filter(Boolean).length; if(rawN>items.length){ toast("링크 주소를 다시 확인해 주세요. (https:// 로 시작해요)"); return; }
+    if(sid){ if(await patch("links",sid,{title,date,note,items})){ closeSheet(); toast("글을 고쳤어요."); } }
+    else { const id=uid(); if(await put("links",id,{id,title,date,note,items,createdAt:new Date().toISOString()})){ closeSheet(); renderMain(); toast("학생들에게 올렸어요."); } } }
   if(f.id==="fTodo"){ const sid=ui.sheet.id; const type=f.querySelector("input[name=tdType]:checked").value;
     const data={ cat:f.querySelector("input[name=tdCat]:checked")?.value||TD_CATS[0], title:$("#tdT").value.trim(), desc:$("#tdD").value.trim(), type, weekday:+$("#tdW").value, weekends: !!$("#tdWE")?.checked, numOn: type==="weekly" && !!$("#tdNumOn")?.checked, numStart: +($("#tdNS")?.value||1), numUnit: $("#tdNU")?.value.trim()||"", start:(type==="daily"?$("#tdS2").value:$("#tdS").value)||ymd(today0()), due: type==="once" ? $("#tdDue").value : "" };
     if(!data.title) return; if(type==="once" && !data.due){ toast("마감일을 골라 주세요."); return; }
