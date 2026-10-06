@@ -11,10 +11,10 @@
 
 /* ---------- 컬렉션과 권한 ---------- */
 const ALL_COLS = ["students", "assignments", "submissions", "notices", "exams", "retakes", "records",
-  "ideas", "ideaAnswers", "todos", "todoDone", "pins", "pinsPlain", "secret", "backupInfo", "photos", "backups"];
+  "ideas", "ideaAnswers", "todos", "todoDone", "pins", "pinsPlain", "secret", "backupInfo", "photos", "backups", "links", "dayoff", "absent"];
 const ADMIN_READ = new Set(["records", "pinsPlain", "secret", "backups", "backupInfo"]); // 선생님만 읽기
 const PUBLIC_READ = new Set(["students", "pins"]);                                       // 로그인 전에도 읽기 (이름 고르기용)
-const STUDENT_WRITE = new Set(["submissions", "photos", "notices", "retakes", "ideaAnswers", "todoDone"]);
+const STUDENT_WRITE = new Set(["submissions", "photos", "notices", "retakes", "ideaAnswers", "todoDone", "absent"]);
 const NO_SYNC = new Set(["photos", "backups"]);                                          // 크기가 커서 필요할 때만 불러와요
 const ID_RE = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
 const MAX_BYTES = 1900000;
@@ -118,6 +118,12 @@ async function isCheckerOf(env, tid, no) {
   const today = todayKST();
   return list.some(c => c && +c.no === no && (!c.until || c.until >= today));
 }
+async function isAnyChecker(env, no) {
+  const { results } = await env.DB.prepare("SELECT data FROM docs WHERE col = 'todos' AND data IS NOT NULL").all();
+  const today = todayKST();
+  return results.some(r => { const t = JSON.parse(r.data); const list = [...(t.checkers || []), ...(t.checker ? [t.checker] : [])];
+    return list.some(c => c && +c.no === no && (!c.until || c.until >= today)); });
+}
 const onlyKeys = (obj, keys) => obj && typeof obj === "object" && Object.keys(obj).every(k => keys.includes(k));
 const heartsOnlyMine = (h, no) => h && typeof h === "object" && Object.keys(h).every(k => k === "s" + no);
 
@@ -143,6 +149,7 @@ async function studentAllowed(env, no, op, col, id, data) {
       return op === "update" && onlyKeys(data, ["hearts"]) && heartsOnlyMine(data.hearts, no); // 친구 글에는 좋아요만
     }
     case "photos": return own;
+    case "absent": return (op === "delete" || (data && /^\d{4}-\d{2}-\d{2}__\d+$/.test(id) && +data.no === +id.split("__")[1])) && await isAnyChecker(env, no); // 검사 도우미만 결석 처리
     case "ideaAnswers": return own && (op === "delete" || +data.no === no);
     case "notices": return own && op === "update" && onlyKeys(data, ["read"]);
     case "retakes": {
