@@ -465,41 +465,6 @@ span.rchip{cursor:default}
 .wst.haspend{background:var(--st-sent-soft)!important}
 .wmatrix tbody tr,.wmatrix td{height:auto}
 .wcell{min-height:52px}
-.wknav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.wknav b{font-size:16px;font-variant-numeric:tabular-nums}
-.wkov th.ovg{background:color-mix(in srgb, var(--tc) 24%, var(--surface))!important;color:color-mix(in srgb, var(--tc) 70%, var(--ink));font-size:13px;font-weight:700;text-align:center;border-left:4px solid color-mix(in srgb, var(--tc) 60%, var(--surface))}
-.wkov th.ovh{text-align:center;font-size:12px;font-weight:700;min-width:66px;background:var(--bg)}
-.wkov th.ovh small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
-.wkov th.ovh.today{color:var(--accent)}
-.wkov .gfirst{border-left:4px solid color-mix(in srgb, var(--tc) 60%, var(--surface))}
-.wkov td.ovc{padding:3px;text-align:center;min-width:66px}
-.ovb{width:100%;min-height:40px;border:none;border-radius:6px;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px 2px;cursor:pointer}
-.ovb:hover{outline:2px solid var(--accent);outline-offset:-2px}
-.ovb .wbook{font-size:10.5px;max-width:84px}
-.wkov tfoot td{font-size:11px;color:var(--muted);text-align:center}
-.wkov td.dsum,.dmatrix td.dsum{display:table-cell;white-space:nowrap}
-.wkov td.dsum .cchip+.cchip,.dmatrix td.dsum .cchip+.cchip{margin-left:4px}
-.lkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:18px}
-.lkcard{position:relative;border:none;border-radius:12px;background:var(--st-wait);color:var(--st-wait-ink);min-height:84px;padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;transition:transform .12s, box-shadow .12s}
-.lkcard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
-.lkdate{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;letter-spacing:.2px}
-.lkname{font-size:14px;font-weight:500;opacity:.9;word-break:keep-all;line-height:1.35}
-.lkcount{font-size:11px;opacity:.75}
-.lknew{position:absolute;top:-8px;right:-6px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.lklinks{display:flex;flex-direction:column;gap:8px}
-.lklink{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);text-decoration:none}
-.lklink:hover{border-color:var(--accent);background:var(--accent-soft)}
-.lkic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--surface);font-size:16px;flex:none}
-.lktx{display:flex;flex-direction:column;min-width:0;flex:1}
-.lktx b{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
-.lktx span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lkgo{font-size:12px;font-weight:700;color:var(--accent);flex:none}
-.c-holi{background:var(--st-none);color:var(--st-none-ink)}
-.c-abs{background:color-mix(in srgb, var(--muted) 16%, var(--surface));color:var(--ink)}
-span.cbtn{display:inline-flex;align-items:center;justify-content:center;height:30px;cursor:default}
-span.ovb{cursor:default}
-.holitag{display:block;font-size:10px!important;color:var(--st-sent)!important;font-weight:700!important}
-.pk:disabled{opacity:.55;cursor:not-allowed}
 .boardhead{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-start;justify-content:space-between}
 /* 파스텔 딱지 */
 .rchip,.numtag{background:color-mix(in srgb, var(--tc) 24%, var(--surface))!important;color:color-mix(in srgb, var(--tc) 70%, var(--ink))!important;border:1px solid color-mix(in srgb, var(--tc) 35%, var(--surface))}
@@ -520,7 +485,6 @@ span.ovb{cursor:default}
   </header>
   <nav class="tabs" role="tablist" id="tabs">
     <button class="tab" role="tab" data-tab="todo" aria-selected="false">ToDoList</button>
-    <button class="tab" role="tab" data-tab="links" aria-selected="false">각종 링크함</button>
     <button class="tab" role="tab" data-tab="hw" aria-selected="true">개인과제</button>
     <button class="tab" role="tab" data-tab="board" aria-selected="false">공유보드</button>
     <button class="tab" role="tab" data-tab="idea" aria-selected="false">생각모으기</button>
@@ -539,7 +503,7 @@ span.ovb{cursor:default}
 <script>
 (() => {
 /* ---------- state ---------- */
-const COLS = ["students","assignments","submissions","notices","exams","retakes","records","ideas","ideaAnswers","todos","todoDone","pins","pinsPlain","secret","backupInfo","links","dayoff","absent"];
+const COLS = ["students","assignments","submissions","notices","exams","retakes","records","ideas","ideaAnswers","todos","todoDone","pins","pinsPlain","secret","backupInfo"];
 const S = {}; COLS.forEach(c => S[c] = {}); S.backups = {};
 let db = null, isTeacher = true, loaded = false; // isTeacher: '선생님 로그인' 링크를 보여 줄지 (웹에서는 누구나 비밀번호로 시도해요)
 const ui = { subj:"전체", tab:"hw", role:"student", me:null, selA:null, selE:null, sheet:null, confirm:null };
@@ -571,7 +535,7 @@ const ST_STUDENT = { wait:{t:"아직 안 냈어요",c:"s-wait"}, sent:{t:"제출
 
 /* ---------- store ---------- */
 function toast(msg){ const r=$("#toastRoot"); r.innerHTML=`<div class="toast" role="status">${esc(msg)}</div>`; clearTimeout(toast.t); toast.t=setTimeout(()=>r.innerHTML="",2600); }
-function fail(e){ console.error(e); const c=e&&e.code; if(c==="not_logged_in"||c==="session_expired"){ toast("로그인이 풀렸어요. 다시 들어와 주세요."); return; } if(c==="unavailable"){ toast("서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요."); return; } if(e && e.status && e.message && c!=="permission_denied"){ toast(/컬렉션|주소가 올바르지/.test(e.message) ? "서버 파일이 예전 버전이에요. functions/api/[[path]].js를 최신 파일로 다시 올려 주세요." : e.message); return; } toast(c==="not_granted"||c==="permission_denied"||c==="invalid_argument" ? "저장 권한이 없어요. 선생님께 편집 권한을 받아 주세요." : c==="quota_exceeded" ? "저장 공간이 가득 찼어요. 오래된 과제를 지워 주세요." : "저장하지 못했어요. 잠시 후 다시 시도해 주세요."); }
+function fail(e){ console.error(e); const c=e&&e.code; if(c==="not_logged_in"||c==="session_expired"){ toast("로그인이 풀렸어요. 다시 들어와 주세요."); return; } if(c==="unavailable"){ toast("서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요."); return; } toast(c==="not_granted"||c==="permission_denied"||c==="invalid_argument" ? "저장 권한이 없어요. 선생님께 편집 권한을 받아 주세요." : c==="quota_exceeded" ? "저장 공간이 가득 찼어요. 오래된 과제를 지워 주세요." : "저장하지 못했어요. 잠시 후 다시 시도해 주세요."); }
 async function put(col,id,data){ try{ if(db) await db.collection(col).doc(id).set(data); else { S[col][id]=data; refresh(); } return true; }catch(e){ fail(e); return false; } }
 async function patch(col,id,data){ try{ if(db) await db.collection(col).doc(id).update(data); else { const cur=S[col][id]||{}; for(const k in data){ cur[k] = (data[k] && typeof data[k]==="object" && !Array.isArray(data[k]) && cur[k] && typeof cur[k]==="object") ? {...cur[k],...data[k]} : data[k]; } S[col][id]=cur; refresh(); } return true; }catch(e){ fail(e); return false; } }
 async function del(col,id){ try{ if(db) await db.collection(col).doc(id).delete(); else { delete S[col][id]; refresh(); } return true; }catch(e){ fail(e); return false; } }
@@ -582,7 +546,7 @@ async function putPhoto(id,src){ photoCache[id]=src; if(!db) return true; try{ a
 /* ---------- render scheduling (don't clobber typing) ---------- */
 let pendMain=false, pendSheet=false;
 const typing = root => { const a=document.activeElement; return a && root.contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && a.type!=="file"; };
-function refresh(){ if($("#bigCloud")) drawIdea(); if(ui.bigHw) renderHwBig(); if(typing($("#main"))) pendMain=true; else renderMain(); if(ui.sheet && (ui.sheet.type==="sub" || ui.sheet.type==="my" || (ui.sheet.type==="post" && !ui.postEdit) || ui.sheet.type==="holi" || ui.sheet.type==="abs")){ if(typing($("#sheetRoot"))) pendSheet=true; else renderSheet(); } renderChrome(); }
+function refresh(){ if($("#bigCloud")) drawIdea(); if(ui.bigHw) renderHwBig(); if(typing($("#main"))) pendMain=true; else renderMain(); if(ui.sheet && (ui.sheet.type==="sub" || ui.sheet.type==="my" || (ui.sheet.type==="post" && !ui.postEdit))){ if(typing($("#sheetRoot"))) pendSheet=true; else renderSheet(); } renderChrome(); }
 document.addEventListener("focusout", () => setTimeout(()=>{ if(pendMain && !typing($("#main"))){pendMain=false;renderMain();} if(pendSheet && !typing($("#sheetRoot"))){pendSheet=false;renderSheet();} },0));
 
 /* ---------- chrome ---------- */
@@ -610,7 +574,6 @@ function renderMain(){
   if(ui.tab==="records") { m.innerHTML = recordsView(); return; }
   if(ui.tab==="students") { m.innerHTML = studentsView(); return; }
   if(ui.tab==="todo") { m.innerHTML = todoView(); return; }
-  if(ui.tab==="links") { m.innerHTML = linksView(); return; }
   if(ui.tab==="board") { m.innerHTML = boardView(); hydratePhotos(); return; }
   if(ui.tab==="idea") { m.innerHTML = ideaView(); drawIdea(); return; }
   if(ui.tab==="hw") m.innerHTML = ui.role==="teacher" ? teacherHW() : studentHW();
@@ -842,7 +805,7 @@ function instancesOf(t, days){
 const doneKey = (tid,period,no) => `${tid}__${period}__${no}`;
 const dState = d => !d || d.kind==="redo" ? null : d.kind==="pass" ? "pass" : "done";
 function passBlocked(t, period, no){ if(!PASS_CATS.includes(t.cat)) return "면제권을 쓸 수 없는 할 일이에요.";
-  const ins = [...instancesOf(t, 35)].reverse().filter(x=>!excused(t,x.period,no)); const i = ins.findIndex(x=>x.period===period); if(i<0) return null;
+  const ins = [...instancesOf(t, 35)].reverse(); const i = ins.findIndex(x=>x.period===period); if(i<0) return null;
   const isP = j => j>=0 && j<ins.length && dState(S.todoDone[doneKey(t.id,ins[j].period,no)])==="pass";
   if(isP(i-1) || isP(i+1)) return t.type==="daily" ? "면제권은 이틀 연속으로 쓸 수 없어요." : "면제권은 2주 연속으로 쓸 수 없어요.";
   return null; }
@@ -857,7 +820,7 @@ function doneSection(me, done){
   const all = todoList().filter(t=>!(isExam(t) && t.type==="once" && parseD(t.due)<today0())); const cats = TD_CATS.filter(c=>all.some(t=>t.cat===c));
   if(!cats.length) return `<section class="panel"><h2>완료한 일</h2><p class="muted">아직 받은 할 일이 없어요.</p></section>`;
   const cellTxt = (t,c) => (t.type==="daily"?CELL_D:{done:["제출"],pass:["면제권"],late:["못 냄"],wait:["아직"]})[c][0];
-  const cls = c => ({done:"c-done",pass:"c-pass",late:"c-late",wait:"c-wait",holi:"c-holi",abs:"c-abs"})[c];
+  const cls = c => ({done:"c-done",pass:"c-pass",late:"c-late",wait:"c-wait"})[c];
   const groups = cats.map(c=>{ const ts = all.filter(t=>t.cat===c); const g = done.filter(x=>x.t.cat===c); const np=g.filter(x=>dState(x.d)==="pass").length; const open=(ui.doneOpen||{})[c];
     let inner="";
     if(open){
@@ -880,7 +843,7 @@ function doneSection(me, done){
 }
 function todoStudent(){
   const me = +ui.me; const todo=[], done=[], overdue=[];
-  todoList().forEach(t=>instancesOf(t).forEach((inst,i)=>{ if(isExam(t) && inst.due<today0()) return; if(excused(t,inst.period,me)) return; const rec=S.todoDone[doneKey(t.id,inst.period,me)]; const d=dState(rec)?rec:null; const it={t,inst,d,rec};
+  todoList().forEach(t=>instancesOf(t).forEach((inst,i)=>{ if(isExam(t) && inst.due<today0()) return; const rec=S.todoDone[doneKey(t.id,inst.period,me)]; const d=dState(rec)?rec:null; const it={t,inst,d,rec};
     if(d) done.push(it); else if(inst.due<today0()) overdue.push(it); else if(t.type==="once" || i===0) todo.push(it); }));
   todo.sort((a,b)=>a.inst.due-b.inst.due); overdue.sort((a,b)=>a.inst.due-b.inst.due);
   done.sort((a,b)=>(b.d.at||"").localeCompare(a.d.at||""));
@@ -895,7 +858,7 @@ function todoStudent(){
     <div class="tdmain"><div class="tdcat">${esc(t.cat)}${rec&&rec.kind==="redo"?` <span class="redotag">↩ ${rec.by==="c"?"도우미":"선생님"} 확인: 다시 해 주세요</span>`:isNew(t)&&!d?` <span class="newtag">NEW</span>`:""}</div><b>${tdTitle(t,inst)}</b><span class="muted">${t.type==="once"?"":t.type==="daily"?"매일 · ":`${inst.label} · `}${t.type==="daily"?`${md(inst.due)} 하루`:`마감 ${md(inst.due)}`}${t.desc?` · ${esc(t.desc)}`:""}</span></div>
     ${ddBadge(inst.due, st)}${btns}</div>`; };
   const myChecks = todoList().filter(t=> t.type!=="once" && isChecker(t,me));
-  const ckHtml = myChecks.map(t=>{ const ins=instancesOf(t); return `<section class="panel ckpanel" style="--tc:${tdColor(t.cat)}"><div class="ahead"><button class="btn sm" data-act="openAbs" style="order:2">🤒 결석 처리</button><div><h2>🔍 검사 도우미 · ${esc(t.title)}</h2><p class="muted" style="margin:4px 0 0">선생님이 ${isChecker(t,me).until?`${md(parseD(isChecker(t,me).until))}까지 `:""}확인을 맡겼어요.${activeCheckers(t).length>1?` 함께 맡은 친구: ${activeCheckers(t).filter(c=>c.no!==me).map(c=>`${c.no}번 ${esc(S.students[c.no]?.name||"")}`).join(", ")}`:""} 친구들 공책을 보고 칸을 눌러 체크해 주세요.</p></div></div>${t.type==="daily"?dailyMatrix(t,ins,true):weeklyMatrix(t,ins,true)}</section>`; }).join("");
+  const ckHtml = myChecks.map(t=>{ const ins=instancesOf(t); return `<section class="panel ckpanel" style="--tc:${tdColor(t.cat)}"><div class="ahead"><div><h2>🔍 검사 도우미 · ${esc(t.title)}</h2><p class="muted" style="margin:4px 0 0">선생님이 ${isChecker(t,me).until?`${md(parseD(isChecker(t,me).until))}까지 `:""}확인을 맡겼어요.${activeCheckers(t).length>1?` 함께 맡은 친구: ${activeCheckers(t).filter(c=>c.no!==me).map(c=>`${c.no}번 ${esc(S.students[c.no]?.name||"")}`).join(", ")}`:""} 친구들 공책을 보고 칸을 눌러 체크해 주세요.</p></div></div>${t.type==="daily"?dailyMatrix(t,ins,true):weeklyMatrix(t,ins,true)}</section>`; }).join("");
   const lateHtml = overdue.length ? `<section class="panel latepanel"><div class="ahead"><div><h2>⏰ 밀린 일 <span class="latecount">${overdue.length}</span></h2><p class="muted" style="margin:4px 0 0">기한이 지났어요. 얼른 해서 체크해 주세요!</p></div></div><div class="tdlist">${overdue.map(row).join("")}</div></section>`
     : `<section class="panel latepanel ok"><h2>⏰ 밀린 일</h2><p class="lateok">밀린 것이 없어요! 🎉</p></section>`;
   return `<div class="list">${ckHtml}${lateHtml}<section class="panel"><div class="ahead"><div><h2>해야 할 일</h2><p class="muted" style="margin:4px 0 0">${todo.length?`${todo.length}개 남았어요`:"지금 할 일을 모두 끝냈어요! 👏"}${passUsed?` · 면제권 ${passUsed}번 사용`:""}</p></div>${tdLegend()}</div>
@@ -903,41 +866,9 @@ function todoStudent(){
     ${doneSection(me, done)}</div>`;
 }
 const tdLegend = () => `<div class="legend">${TD_CATS.map(c=>`<span class="tdlg" style="--tc:${tdColor(c)}">${c}</span>`).join("")}</div>`;
-/* 교사 · 이번 주 한눈에 보기 (오늘하루 · 독서록 · 주제글쓰기) */
-const WK_ORDER = ["오늘하루 작성","독서록 제출","주제글쓰기 제출"];
-const tdViewBar = () => `<div class="subtabs" role="group" aria-label="보기"><button class="stab" aria-pressed="${ui.tdView!=="week"}" data-act="tdView" data-v="list">📋 할 일 목록</button><button class="stab" aria-pressed="${ui.tdView==="week"}" data-act="tdView" data-v="week">🗓 주간 한눈에 보기</button><span class="spacer" style="flex:1"></span><button class="stab" data-act="openHoli">🏖 휴일 설정</button><button class="stab" data-act="openAbs">🤒 결석 처리</button></div>`;
-function weekOverview(){
-  const off = ui.tdWeek||0; const mon = addDays(mondayOf(today0()), 7*off); const sun = addDays(mon,6); const wk = ymd(mon);
-  const list = students();
-  const ts = todoList().filter(t=>WK_ORDER.includes(t.cat) && t.type!=="once").sort((a,b)=>WK_ORDER.indexOf(a.cat)-WK_ORDER.indexOf(b.cat) || (a.createdAt||"").localeCompare(b.createdAt||""));
-  const nav = `<div class="wknav"><button class="btn sm" data-act="tdWeek" data-d="-1">◀ 지난 주</button><b>${md(mon)} ~ ${md(sun)}</b>${off===0?`<span class="cchip c-wait">이번 주</span>`:`<button class="btn ghost sm" data-act="tdWeek" data-d="0">이번 주로</button>`}<button class="btn sm" data-act="tdWeek" data-d="1">다음 주 ▶</button></div>`;
-  if(!ts.length) return `<div class="empty"><h3>오늘하루 · 독서록 · 주제글쓰기 할 일이 없어요</h3><p>할 일 목록에서 매일/매주 하는 일을 먼저 보내 주세요.</p></div>`;
-  // 열 만들기
-  const groups = ts.map(t=>{
-    if(t.type==="daily"){ const ins = instancesOf(t, Math.max(14, dayDiff(today0(),mon)+1)); const days = (t.weekends?[0,1,2,3,4,5,6]:[0,1,2,3,4]).map(k=>addDays(mon,k));
-      return { t, cols: days.map(d=>({ inst: ins.find(i=>i.period===ymd(d))||null, head:`${WDN[d.getDay()]}<small>${d.getMonth()+1}/${d.getDate()}</small>${isHoliday(ymd(d))?`<small class="holitag">${esc(holiName(ymd(d)))}</small>`:""}`, today: ymd(d)===ymd(today0()), holi:isHoliday(ymd(d)) })) }; }
-    const inst = instancesOf(t).find(i=>i.period===wk)||null;
-    return { t, inst, cols:[{ inst, head: inst?`마감<small>${md(inst.due)}</small>`:`<small>회차 없음</small>`, today:false }] };
-  });
-  const isD = t => t.type==="daily";
-  const txt = (t,c) => isD(t) ? CELL_D[c][0] : ({done:"O",pass:"면제",late:"X",wait:""})[c];
-  const cls = c => ({done:"c-done",pass:"c-pass",late:"c-late",wait:"c-wait",holi:"c-holi",abs:"c-abs"})[c];
-  const head1 = groups.map(g=>`<th colspan="${g.cols.length}" class="ovg" style="--tc:${tdColor(g.t.cat)}">${esc(g.t.cat.replace(" 제출","").replace(" 작성",""))}${g.inst&&g.inst.numLbl?` <span class="numtag">${esc(g.inst.numLbl)}</span>`:""}</th>`).join("");
-  const head2 = groups.map(g=>g.cols.map((c,k)=>`<th class="ovh${k===0?" gfirst":""}${c.today?" today":""}" style="--tc:${tdColor(g.t.cat)}">${c.head}${c.inst&&!c.holi?`<button class="allbtn" data-act="tdAll" data-id="${g.t.id}" data-p="${c.inst.period}" title="남은 학생 모두 확인">✓ 모두</button>`:""}</th>`).join("")).join("");
-  const rows = list.map(st=>{ let late=0, pend=0;
-    const cells = groups.map(g=>g.cols.map((c,k)=>{ const first=k===0?" gfirst":""; if(!c.inst) return `<td class="ovc${first}" style="--tc:${tdColor(g.t.cat)}"><span class="muted">–</span></td>`;
-      const s=cellOf(g.t,c.inst,st.no); if(s==="holi"||s==="abs") return `<td class="ovc${first}" style="--tc:${tdColor(g.t.cat)}"><span class="ovb ${cls(s)}" title="${s==="holi"?esc(holiName(c.inst.period)):"결석"}">${CELL_D[s][0]}</span></td>`;
-      const r=recOf(g.t,c.inst,st.no); const pd=isPend(r); if(s==="late") late++; if(pd) pend++;
-      return `<td class="ovc${first}" style="--tc:${tdColor(g.t.cat)}"><button class="ovb ${cls(s)}${pd?" c-pend":""}" data-act="tdToggle" data-id="${g.t.id}" data-p="${c.inst.period}" data-no="${st.no}" title="${st.no}번 ${esc(st.name)} · ${esc(g.t.title)}${pd?" · 학생이 냄, 눌러서 확인":""}${r&&r.book?` · 📖 ${esc(r.book)}`:""}"><span>${txt(g.t,s)}${pd?`<i class="pend">!</i>`:""}</span>${r&&r.book&&dState(r)?`<span class="wbook">${esc(r.book)}</span>`:""}</button></td>`; }).join("")).join("");
-    return `<tr><td class="c-no">${st.no}</td><td class="c-nm">${esc(st.name)}${pend?` <i class="pend" title="확인할 제출 ${pend}개">!</i>`:""}</td>${cells}<td class="dsum">${late?`<span class="cchip c-late">밀림 ${late}</span>`:""}${pend?`<span class="cchip c-wait">확인 ${pend}</span>`:""}${!late&&!pend?`<span class="muted">–</span>`:""}</td></tr>`; }).join("");
-  const foot = groups.map(g=>g.cols.map((c,k)=>{ if(c.holi) return `<td class="ovc${k===0?" gfirst":""}" style="--tc:${tdColor(g.t.cat)}">휴일</td>`; const ex = c.inst ? list.filter(st=>cellOf(g.t,c.inst,st.no)==="abs").length : 0; const n = c.inst ? list.filter(st=>["done","pass"].includes(cellOf(g.t,c.inst,st.no))).length : null; return `<td class="ovc${k===0?" gfirst":""}" style="--tc:${tdColor(g.t.cat)}">${n===null?"":`${n}/${list.length-ex}`}</td>`; }).join("")).join("");
-  return `${nav}<div class="legend"><span class="cchip c-done">작성 · O</span><span class="cchip c-pass">면제권</span><span class="cchip c-late">미작성 · X</span><span class="cchip c-wait">아직</span><span class="cchip c-holi">휴일</span><span class="cchip c-abs">결석</span><span><i class="pend">!</i> 학생이 스스로 낸 칸이에요. 누르면 확인, 한 번 더 누르면 다시 하라고 돌려보내요. 빈칸은 누를 때마다 작성 → 면제권 → 안 함.</span></div>
-    <div class="tablewrap"><table class="matrix wkov"><thead><tr><th class="c-no" rowspan="2">번호</th><th class="c-nm" rowspan="2">이름</th>${head1}<th rowspan="2">합계</th></tr><tr>${head2}</tr></thead><tbody>${rows}</tbody><tfoot><tr><td class="c-no"></td><td class="c-nm">완료</td>${foot}<td></td></tr></tfoot></table></div>`;
-}
 function todoTeacher(){
-  if(ui.tdView==="week") return `<section class="panel"><div class="ahead"><div><h2>ToDoList · 주간 한눈에 보기</h2><p class="muted" style="margin:4px 0 0">이 주의 오늘하루 · 독서록 · 주제글쓰기 제출을 학생별로 한 번에 봐요. 칸을 눌러 바로 확인할 수 있어요.</p></div><button class="btn primary" data-act="newTodo">＋ 할 일 보내기</button></div>${tdViewBar()}${weekOverview()}</section>`;
   const all = todoList(); const N = students().length;
-  const head = `<div class="ahead"><div><h2>ToDoList</h2><p class="muted" style="margin:4px 0 0">보낸 할 일은 학생 화면에 바로 나타나요. 줄을 누르면 학생별로 했는지 확인할 수 있어요.</p></div><button class="btn primary" data-act="newTodo">＋ 할 일 보내기</button></div>${tdViewBar()}`;
+  const head = `<div class="ahead"><div><h2>ToDoList</h2><p class="muted" style="margin:4px 0 0">보낸 할 일은 학생 화면에 바로 나타나요. 줄을 누르면 학생별로 했는지 확인할 수 있어요.</p></div><button class="btn primary" data-act="newTodo">＋ 할 일 보내기</button></div>`;
   if(!all.length) return `<section class="panel">${head}${tdLegend()}<div class="empty"><h3>아직 보낸 할 일이 없어요</h3><p>매주 하는 일(독서록, 주제글쓰기), 매일 하는 일(오늘하루), 한 번만 할 일을 보내 보세요.</p><button class="btn primary" data-act="newTodo">첫 할 일 보내기</button></div></section>`;
   const active = all.filter(t=>!(t.type==="once" ? parseD(t.due)<addDays(today0(), isExam(t)?0:-14) : t.endedAt)), old = all.filter(t=>!active.includes(t));
   const row = t => { const ins=instancesOf(t); const sel = ui.tdSel===t.id; const cur = t.type==="weekly" ? (ins.find(i=>i.due>=today0() && dayDiff(i.due,today0())<7) || ins[0]) : ins[0];
@@ -950,15 +881,9 @@ function todoTeacher(){
   return `<section class="panel">${head}${tdLegend()}<div class="alist">${active.map(row).join("")||`<p class="muted">진행 중인 할 일이 없어요.</p>`}</div>
     ${old.length?`<h3 class="sechead">지난 할 일 <span class="muted">${old.length}</span></h3><div class="alist">${old.map(row).join("")}</div>`:""}</section>`;
 }
-/* 휴일 · 결석 (매일 하는 일에만 적용돼요) */
-const isHoliday = d => !!(S.dayoff||{})[`h_${d}`];
-const holiName = d => ((S.dayoff||{})[`h_${d}`]||{}).name || "휴일";
-const isAbsent = (d,no) => !!(S.dayoff||{})[`a_${d}__${no}`] || !!(S.absent||{})[`${d}__${no}`];
-const absList = () => [...Object.entries(S.dayoff||{}).filter(([k,x])=>x.type==="absent").map(([k,x])=>({...x,_col:"dayoff",_id:k})), ...Object.entries(S.absent||{}).map(([k,x])=>({...x,_col:"absent",_id:k}))];
-const excused = (t,period,no) => t.type==="daily" && (isHoliday(period) || isAbsent(period,no));
-const cellOf = (t,inst,no) => { if(t.type==="daily"){ if(isHoliday(inst.period)) return "holi"; if(isAbsent(inst.period,no)) return "abs"; } const d=S.todoDone[doneKey(t.id,inst.period,no)]; const s=dState(d); return s || (inst.due<today0()?"late":"wait"); };
+const cellOf = (t,inst,no) => { const d=S.todoDone[doneKey(t.id,inst.period,no)]; const s=dState(d); return s || (inst.due<today0()?"late":"wait"); };
 const CELL = { done:["제출","c-done"], pass:["면제권","c-pass"], late:["미제출","c-late"], wait:["아직","c-wait"] };
-const CELL_D = { done:["작성","c-done"], pass:["면제권","c-pass"], late:["미작성","c-late"], wait:["아직","c-wait"], holi:["휴일","c-holi"], abs:["결석","c-abs"] };
+const CELL_D = { done:["작성","c-done"], pass:["면제권","c-pass"], late:["미작성","c-late"], wait:["아직","c-wait"] };
 function todoDetail(t, ins, cur){
   if(!ins.length) return `<div class="adetail"><p class="muted">첫 마감일이 아직 오지 않았어요.</p>${tdActions(t)}</div>`;
   if(isExam(t)){ const inst=cur||ins[0]; const ready=students().filter(st=>dState(S.todoDone[doneKey(t.id,inst.period,st.no)])); const notyet=students().filter(st=>!ready.includes(st));
@@ -982,15 +907,14 @@ function todoDetail(t, ins, cur){
 }
 function dailyMatrix(t, ins, asChecker){
   const cols = [...ins].reverse(); const list = students();
-  const head = cols.map(i=>{ const isT = i.period===ymd(today0()); if(isHoliday(i.period)) return `<th class="dcol">${i.due.getMonth()+1}/${i.due.getDate()}<small>${WDN[i.due.getDay()]}</small><small class="holitag">${esc(holiName(i.period))}</small></th>`; return `<th class="dcol${isT?" today":""}">${i.due.getMonth()+1}/${i.due.getDate()}<small>${WDN[i.due.getDay()]}${isT?" · 오늘":""}</small><button class="allbtn" data-act="tdAll" data-id="${t.id}" data-p="${i.period}" title="${md(i.due)} 남은 학생 모두 작성으로">✓ 모두</button></th>`; }).join("");
+  const head = cols.map(i=>{ const isT = i.period===ymd(today0()); return `<th class="dcol${isT?" today":""}">${i.due.getMonth()+1}/${i.due.getDate()}<small>${WDN[i.due.getDay()]}${isT?" · 오늘":""}</small><button class="allbtn" data-act="tdAll" data-id="${t.id}" data-p="${i.period}" title="${md(i.due)} 남은 학생 모두 작성으로">✓ 모두</button></th>`; }).join("");
   const rows = list.map(st=>{ let miss=0, pass=0; const cells = cols.map(i=>{ const c=cellOf(t,i,st.no); if(c==="late") miss++; if(c==="pass") pass++;
-    if(c==="holi"||c==="abs") return `<td class="dcell"><span class="cbtn ${CELL_D[c][1]}" title="${c==="holi"?esc(holiName(i.period)):"결석"}">${CELL_D[c][0]}</span></td>`;
     const r=recOf(t,i,st.no); const pd=isPend(r); return `<td class="dcell"><button class="cbtn ${CELL_D[c][1]}${pd?" c-pend":""}" data-act="tdToggle" data-id="${t.id}" data-p="${i.period}" data-no="${st.no}" title="${pd?"학생이 표시함 · 눌러서 확인":""}" aria-label="${st.no}번 ${md(i.due)} ${CELL_D[c][0]}${pd?" 확인 필요":""}">${CELL_D[c][0]}${pd?`<i class="pend">!</i>`:""}</button></td>`; }).join("");
     const np=cols.filter(i=>isPend(recOf(t,i,st.no))).length;
     return `<tr><td class="c-no">${st.no}</td><td class="c-nm">${esc(st.name)}${np?` <i class="pend" title="확인할 표시 ${np}개">!</i>`:""}</td>${cells}<td class="dsum">${miss?`<span class="c-late cchip">미작성 ${miss}</span>`:""}${pass?`<span class="c-pass cchip">면제 ${pass}</span>`:""}${!miss&&!pass?`<span class="muted">–</span>`:""}</td></tr>`; }).join("");
-  const foot = cols.map(i=>{ if(isHoliday(i.period)) return `<td class="dcol">휴일</td>`; const ex=list.filter(st=>isAbsent(i.period,st.no)).length; const n=list.filter(st=>["done","pass"].includes(cellOf(t,i,st.no))).length; return `<td class="dcol">${n}/${list.length-ex}</td>`; }).join("");
+  const foot = cols.map(i=>{ const n=list.filter(st=>["done","pass"].includes(cellOf(t,i,st.no))).length; return `<td class="dcol">${n}/${list.length}</td>`; }).join("");
   return `<div class="adetail">${t.desc?`<p class="desc" style="margin:0">${esc(t.desc)}</p>`:""}
-    <div class="ahead"><div class="legend"><span class="cchip c-done">작성</span><span class="cchip c-pass">면제권</span><span class="cchip c-late">미작성</span><span class="cchip c-wait">아직(오늘)</span><span class="cchip c-holi">휴일</span><span class="cchip c-abs">결석</span><span><b>!</b> 표시는 학생이 스스로 체크한 칸이에요. 누르면 확인 완료, 한 번 더 누르면 학생에게 다시 하라고 돌려보내요. 빈칸은 누를 때마다 작성 → 면제권 → 안 함. 날짜 아래 "✓ 모두"는 그날을 한 번에 확인·작성 처리해요. 최근 2주가 보여요.</span></div>${asChecker?"":tdActions(t)}</div>${asChecker?"":`<div class="ahead">${checkerCtl(t)}</div>`}
+    <div class="ahead"><div class="legend"><span class="cchip c-done">작성</span><span class="cchip c-pass">면제권</span><span class="cchip c-late">미작성</span><span class="cchip c-wait">아직(오늘)</span><span><b>!</b> 표시는 학생이 스스로 체크한 칸이에요. 누르면 확인 완료, 한 번 더 누르면 학생에게 다시 하라고 돌려보내요. 빈칸은 누를 때마다 작성 → 면제권 → 안 함. 날짜 아래 "✓ 모두"는 그날을 한 번에 확인·작성 처리해요. 최근 2주가 보여요.</span></div>${asChecker?"":tdActions(t)}</div>${asChecker?"":`<div class="ahead">${checkerCtl(t)}</div>`}
     <div class="tablewrap"><table class="matrix dmatrix"><thead><tr><th class="c-no">번호</th><th class="c-nm">이름</th>${head}<th>합계</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td class="c-no"></td><td class="c-nm">작성</td>${foot}<td></td></tr></tfoot></table></div></div>`;
 }
 const shortName = n => (n||"").length>=3 ? n.slice(1) : (n||"");
@@ -1018,16 +942,6 @@ function checkerCtl(t){
 }
 const tdActions = t => `<div class="actions">${t.type!=="once"?`<button class="btn" data-act="tdStop" data-id="${t.id}">${t.endedAt?"다시 보내기":t.type==="daily"?"⏹ 오늘까지만":"⏹ 이번 주까지만"}</button>`:""}<button class="btn" data-act="editTodo" data-id="${t.id}">수정</button>${ui.confirm===`delTd_${t.id}`?`<button class="btn warn" data-act="tdDel" data-id="${t.id}">정말 삭제</button><button class="btn ghost" data-act="cancelConfirm">취소</button>`:`<button class="btn ghost" data-act="tdAskDel" data-id="${t.id}">삭제</button>`}</div>`;
 
-/* 각종 링크함 */
-const lkDate = s => { const d=parseD(s); return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}. (${WDN[d.getDay()]})`; };
-const linkList = () => Object.values(S.links||{}).sort((a,b)=>(b.date||"").localeCompare(a.date||"") || (b.createdAt||"").localeCompare(a.createdAt||""));
-function parseLinks(txt){ return String(txt||"").split(/\n/).map(l=>l.trim()).filter(Boolean).map(l=>{ const m=l.split(/\s*\|\s*/); const url=safeUrl(m.length>1?m.slice(1).join("|"):m[0]); return url?{label:m.length>1?m[0]:"",url}:null; }).filter(Boolean); }
-function linksView(){
-  const T = ui.role==="teacher"; const list = linkList();
-  const head = `<div class="ahead"><div><h2>각종 링크함</h2><p class="muted" style="margin:4px 0 0">${T?"보낸 링크는 학생 화면에 알림장처럼 바로 나타나요.":"선생님이 보낸 수업 링크예요. 눌러서 들어가 보세요."}</p></div>${T?`<button class="btn primary" data-act="newLink">＋ 링크 보내기</button>`:""}</div>`;
-  if(!list.length) return `<section class="panel">${head}<div class="empty"><h3>아직 받은 링크가 없어요</h3><p>${T?"수업에 쓸 링크를 보내면 학생들에게 카드로 보여요.":"선생님이 링크를 보내면 여기에 나타나요."}</p>${T?`<button class="btn primary" data-act="newLink">첫 링크 보내기</button>`:""}</div></section>`;
-  return `<section class="panel">${head}<div class="lkgrid">${list.map(l=>`<button class="lkcard" data-act="openLink" data-id="${l.id}">${isNew(l)?`<span class="newtag lknew">NEW</span>`:""}<span class="lkdate">${lkDate(l.date)}</span><span class="lkname">${esc(l.title)}</span>${(l.items||[]).length>1?`<span class="lkcount">링크 ${(l.items||[]).length}개</span>`:""}</button>`).join("")}</div></section>`;
-}
 /* 생각모으기 */
 const normW = w => String(w||"").trim().replace(/\s+/g," ").replace(/[.,!?~·…"'“”‘’]+$/g,"");
 const keyW = w => normW(w).toLowerCase().replace(/\s+/g,"");
@@ -1233,36 +1147,6 @@ function renderSheet(){
       ${s.type==="pinchange"?"":`<div class="seg"><label><input type="checkbox" id="pinRem"><span>이 기기에서 기억하기 (내 기기에서만)</span></label></div>`}
       <p class="muted" style="margin:0">친구에게 알려 주지 마세요. 잊어버리면 선생님께 초기화해 달라고 하면 돼요.</p>
       <button class="btn primary" type="submit">${ch?"바꾸기":setMode?"설정하기":"만들고 들어가기"}</button></form>`; }
-  if(s.type==="holi"){ const hs=Object.values(S.dayoff||{}).filter(x=>x.type==="holiday").sort((a,b)=>b.date.localeCompare(a.date));
-    body = `<div class="sheet-h"><h2>🏖 휴일 설정</h2><button class="x" data-act="close" aria-label="닫기">×</button></div>
-    <p class="muted" style="margin:0">고른 날은 반 전체의 <b>오늘하루(매일 하는 일)</b>가 ‘휴일’로 처리돼요. 학생 할 일과 밀린 일에도 나오지 않아요.</p>
-    <form id="fHoli" class="list"><div class="frow"><label class="f" for="hoD">날짜<input class="inp" type="date" id="hoD" required value="${esc(ui.hoDate||ymd(today0()))}"></label><label class="f" for="hoN">이름 (선택)<input class="inp" id="hoN" maxlength="20" placeholder="예: 개천절, 재량휴업일"></label></div>
-      <button class="btn primary" type="submit">휴일로 정하기</button></form>
-    <div class="list"><b>정해 둔 휴일 <span class="muted">${hs.length}</span></b>${hs.length?hs.map(h=>`<div class="dline"><span class="dlt"><b>${lkDate(h.date)}</b> ${esc(h.name||"휴일")}</span><span></span><span></span><button class="linkbtn dlundo" data-act="delDayoff" data-id="h_${h.date}">지우기</button></div>`).join(""):`<p class="muted" style="margin:0">아직 없어요.</p>`}</div>`; }
-  if(s.type==="abs"){ const d=ui.abDate||ymd(today0()); ui.absSel=ui.absSel||[]; const as=absList().sort((a,b)=>b.date.localeCompare(a.date)||a.no-b.no);
-    body = `<div class="sheet-h"><h2>🤒 결석 처리</h2><button class="x" data-act="close" aria-label="닫기">×</button></div>
-    <p class="muted" style="margin:0">고른 학생은 그날 <b>오늘하루(매일 하는 일)</b>가 ‘결석’으로 처리돼서 밀린 일로 남지 않아요.</p>
-    <form id="fAbs" class="list"><label class="f" for="abD">날짜<input class="inp" type="date" id="abD" required value="${esc(d)}"></label>
-      <div class="f" style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:500">학생 <span>${ui.absSel.length?`${ui.absSel.length}명 선택`:"한 명 이상 골라 주세요"}</span>
-        <div class="pickrow">${students().map(st=>{ const already=isAbsent(d,st.no); return `<button type="button" class="pk" aria-pressed="${ui.absSel.includes(st.no)}" data-act="absPick" data-no="${st.no}" ${already?"disabled title=\"이미 결석\"":""}><b>${st.no}</b> ${esc(st.name)}${already?" ✓":""}</button>`; }).join("")}</div></div>
-      <label class="f" for="abR">사유 (선택)<input class="inp" id="abR" maxlength="20" value="${esc(ui.abReason||"")}" placeholder="예: 병결, 체험학습"></label>
-      <button class="btn primary" type="submit">결석으로 저장</button></form>
-    <div class="list"><b>결석 기록 <span class="muted">${as.length}</span></b>${as.length?as.slice(0,40).map(a=>`<div class="dline"><span class="dlt"><b>${lkDate(a.date)}</b> ${a.no}번 ${esc(S.students[a.no]?.name||"")}</span><span class="dld">${esc(a.reason||"")}</span><span class="dld">${a.by==="c"?`${a.checker}번 도우미`:""}</span><button class="linkbtn dlundo" data-act="delDayoff" data-col="${a._col}" data-id="${a._id}">지우기</button></div>`).join(""):`<p class="muted" style="margin:0">아직 없어요.</p>`}</div>`; }
-  if(s.type==="linkform"){ const l = s.id ? S.links[s.id] : {date: ymd(today0())};
-    body = `<div class="sheet-h"><h2>${s.id?"링크 고치기":"링크 보내기"}</h2><button class="x" data-act="close" aria-label="닫기">×</button></div>
-    <form id="fLink" class="list"><div class="frow"><label class="f" for="lkD">보내는 날짜<input class="inp" type="date" id="lkD" required value="${esc(l.date||ymd(today0()))}"></label>
-      <label class="f" for="lkT">이름 (카드에 보여요)<input class="inp" id="lkT" required maxlength="40" value="${esc(l.title||"")}" placeholder="예: 3단원 사회 영상"></label></div>
-      <label class="f" for="lkU">링크 (한 줄에 하나씩)<textarea class="inp" id="lkU" required placeholder="https://youtu.be/...&#10;활동지 | https://docs.google.com/...">${esc((l.items||[]).map(it=>it.label?`${it.label} | ${it.url}`:it.url).join("\n"))}</textarea></label>
-      <span class="muted" style="font-size:12px;margin-top:-6px">링크 앞에 "이름 |"을 붙이면 학생 화면에 그 이름으로 보여요. 예: 활동지 | https://...</span>
-      <label class="f" for="lkN">안내 (선택)<textarea class="inp" id="lkN" style="min-height:70px" placeholder="예: 영상을 보고 활동지 2번까지 풀어 오세요.">${esc(l.note||"")}</textarea></label>
-      <button class="btn primary" type="submit">${s.id?"저장":"보내기"}</button>
-      ${s.id ? (ui.confirm==="delLink" ? `<div class="confirm"><span>이 링크를 지울까요? 학생 화면에서도 사라져요.</span><button class="btn ghost" type="button" data-act="cancelDelLink">취소</button><button class="btn warn" type="button" data-act="delLink" data-id="${s.id}">지우기</button></div>` : `<button class="btn ghost" type="button" data-act="askDelLink">이 링크 삭제</button>`) : ""}</form>`; }
-  if(s.type==="linkview"){ const l=S.links[s.id]; if(!l){ closeSheet(); return; }
-    body = `<div class="sheet-h"><div><div class="lkdate" style="font-size:14px">${lkDate(l.date)}</div><h2>${esc(l.title)}</h2></div><button class="x" data-act="close" aria-label="닫기">×</button></div>
-    ${l.note?`<div class="box">${esc(l.note)}</div>`:""}
-    <div class="lklinks">${(l.items||[]).map((it,k)=>{ const id=ytId(it.url); let host=""; try{ host=new URL(it.url).hostname.replace(/^www\./,""); }catch(e){}
-      return `<a class="lklink" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer"><span class="lkic">${id?"▶":"🔗"}</span><span class="lktx"><b>${esc(it.label||(id?"YouTube 영상":host)||"링크 "+(k+1))}</b><span>${esc(it.url)}</span></span><span class="lkgo">열기 ↗</span></a>`; }).join("")}</div>
-    ${ui.role==="teacher"?`<div class="actions"><button class="btn" data-act="editLink" data-id="${l.id}">수정</button></div>`:""}`; }
   if(s.type==="todo"){ const td = s.id ? S.todos[s.id] : {type:"once", weekday:5, cat:TD_CATS[0]}; const ty=td.type||"weekly";
     body = `<div class="sheet-h"><h2>${s.id?"할 일 수정":"할 일 보내기"}</h2><button class="x" data-act="close" aria-label="닫기">×</button></div>
     <form id="fTodo" class="list"><div class="f" style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:500">종류<div class="subjpick">${TD_CATS.map(c=>`<label style="--sc:${tdColor(c)}"><input type="radio" name="tdCat" value="${c}" ${td.cat===c?"checked":""} required><span>${c}</span></label>`).join("")}</div></div>
@@ -1371,18 +1255,6 @@ document.addEventListener("click", async ev => {
     case "numEdit": ui.numEdit = ui.numEdit===t.dataset.k ? null : t.dataset.k; renderMain(); setTimeout(()=>$("#tdNum")?.focus(),0); break;
     case "ckSet": { const no=+$(`#ckNo_${id}`).value; const until=$(`#ckUntil_${id}`).value; if(!no){ toast("검사를 맡길 학생을 골라 주세요."); break; } const td=S.todos[id]; const list=[...activeCheckers(td).filter(c=>c.no!==no), {no,until}]; if(await patch("todos",id,{checkers:list, checker:null})) toast(`${no}번 ${S.students[no]?.name||""}에게 검사를 맡겼어요.`); break; }
     case "ckClear": { const td=S.todos[id]; const list=activeCheckers(td).filter(c=>c.no!==no); if(await patch("todos",id,{checkers:list, checker:null})) toast(`${no}번 검사 권한을 뺐어요.`); break; }
-    case "openHoli": ui.hoDate=null; openSheet({type:"holi"}); break;
-    case "openAbs": ui.absSel=[]; ui.abDate=null; ui.abReason=""; openSheet({type:"abs"}); break;
-    case "absPick": { const i=ui.absSel.indexOf(no); if(i>=0) ui.absSel.splice(i,1); else ui.absSel.push(no); ui.abReason=$("#abR")?.value||ui.abReason; renderSheet(); break; }
-    case "delDayoff": { if(await del(t.dataset.col||"dayoff",id)) { toast("지웠어요."); renderSheet(); renderMain(); } break; }
-    case "newLink": ui.confirm=null; openSheet({type:"linkform"}); setTimeout(()=>$("#lkT")?.focus(),30); break;
-    case "editLink": ui.confirm=null; openSheet({type:"linkform",id}); break;
-    case "openLink": openSheet({type:"linkview",id}); break;
-    case "askDelLink": ui.confirm="delLink"; renderSheet(); break;
-    case "cancelDelLink": ui.confirm=null; renderSheet(); break;
-    case "delLink": { ui.confirm=null; closeSheet(); if(await del("links",id)) toast("링크를 지웠어요."); break; }
-    case "tdView": ui.tdView=t.dataset.v; renderMain(); break;
-    case "tdWeek": { const d=+t.dataset.d; ui.tdWeek = d===0 ? 0 : (ui.tdWeek||0)+d; renderMain(); break; }
     case "tdAskPass": ui.confirm=`pass_${t.dataset.k}`; ui.bookDraft=""; renderMain(); setTimeout(()=>$("#bookIn")?.focus(),30); break;
     case "tdPass": { let book=""; if(S.todos[id]&&isBook(S.todos[id])){ book=($("#bookIn")?.value||"").trim(); if(!book){ toast("면제권을 써도 이번 책 이름은 써 주세요."); $("#bookIn")?.focus(); break; } } ui.confirm=null; ui.bookDraft=""; { const td=S.todos[id]; const pb=td&&passBlocked(td,t.dataset.p,+ui.me); if(pb){ toast(pb); renderMain(); break; } } if(await put("todoDone",doneKey(id,t.dataset.p,+ui.me),{tid:id,period:t.dataset.p,no:+ui.me,by:"s",kind:"pass",...(book?{book}:{}),at:new Date().toISOString()})) showPop("🎟","면제권을 사용했어요!","면제권에 해당하는 만큼 <b>통장에 기록하세요!</b>"); else renderMain(); break; }
     case "popClose": $("#popRoot").innerHTML=""; ui.bkPack=null; break;
@@ -1391,7 +1263,7 @@ document.addEventListener("click", async ev => {
     case "bkDoRestore": { const pack=ui.bkPack; $("#popRoot").innerHTML=""; ui.bkPack=null; if(pack) applyRestore(pack); break; }
     case "bkDownload": { try{ bkProgress("파일을 만드는 중…"); const at=new Date().toISOString(); const data=await collectData(); const d=new Date(at); const name=`우리반과제함_백업_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}_${String(d.getHours()).padStart(2,"0")}${String(d.getMinutes()).padStart(2,"0")}.json`;
       $("#toastRoot").innerHTML=""; await dlApi.save({filename:name, data:new Blob([JSON.stringify({v:1,at,data})],{type:"application/json"})}); toast("백업 파일을 저장했어요."); }catch(e){ if(e&&e.code==="declined"){ toast("저장을 취소했어요."); } else { console.error(e); toast("파일로 저장하지 못했어요."); } } break; }
-    case "tdAll": { if(ui.role!=="teacher"){ const td=S.todos[id]; if(!td || !isChecker(td,+ui.me)){ toast("검사 권한이 없어요."); break; } } let n=0; const tdA=S.todos[id]; for(const st of students()){ if(tdA && excused(tdA,t.dataset.p,st.no)) continue; const k=doneKey(id,t.dataset.p,st.no); const r0=S.todoDone[k]; if(isPend(r0)){ if(await put("todoDone",k,{...r0,by: ui.role==="teacher"?"t":"c", ...(ui.role==="teacher"?{}:{checker:+ui.me}),orig:"s",submittedAt:r0.at,at:new Date().toISOString()})) n++; continue; } if(!dState(r0) && await put("todoDone",k,{tid:id,period:t.dataset.p,no:st.no,by: ui.role==="teacher"?"t":"c", ...(ui.role==="teacher"?{}:{checker:+ui.me}),kind:"done",at:new Date().toISOString()})) n++; } toast(`${n}명을 확인·완료로 바꿨어요.`); break; }
+    case "tdAll": { if(ui.role!=="teacher"){ const td=S.todos[id]; if(!td || !isChecker(td,+ui.me)){ toast("검사 권한이 없어요."); break; } } let n=0; for(const st of students()){ const k=doneKey(id,t.dataset.p,st.no); const r0=S.todoDone[k]; if(isPend(r0)){ if(await put("todoDone",k,{...r0,by: ui.role==="teacher"?"t":"c", ...(ui.role==="teacher"?{}:{checker:+ui.me}),orig:"s",submittedAt:r0.at,at:new Date().toISOString()})) n++; continue; } if(!dState(r0) && await put("todoDone",k,{tid:id,period:t.dataset.p,no:st.no,by: ui.role==="teacher"?"t":"c", ...(ui.role==="teacher"?{}:{checker:+ui.me}),kind:"done",at:new Date().toISOString()})) n++; } toast(`${n}명을 확인·완료로 바꿨어요.`); break; }
     case "tdStop": { const td=S.todos[id]; if(!td) break; if(await patch("todos",id, td.endedAt?{endedAt:null}:{endedAt:ymd(today0())})) toast(td.endedAt?"다시 보내요.":"보내기를 멈췄어요."); break; }
     case "tdAskDel": ui.confirm=`delTd_${id}`; renderMain(); break;
     case "tdDel": { ui.confirm=null; for(const k of Object.keys(S.todoDone)) if(k.startsWith(id+"__")) await del("todoDone",k); if(await del("todos",id)){ if(ui.tdSel===id) ui.tdSel=null; toast("할 일을 지웠어요."); } break; }
@@ -1463,8 +1335,6 @@ document.addEventListener("change", async ev => {
   const t=ev.target;
   if(t.id==="bkFile"){ const f=t.files[0]; t.value=""; if(!f) return; try{ const pack=JSON.parse(await f.text()); if(!pack||!pack.data||!pack.at) throw 0; askRestore(pack,true); }catch(e){ toast("이 파일은 우리 반 과제함 백업 파일이 아니에요."); } return; }
   if(t.id==="recDate"){ ui.recDate=t.value; return; }
-  if(t.id==="abD"){ ui.abDate=t.value; ui.absSel=[]; ui.abReason=$("#abR")?.value||""; renderSheet(); return; }
-  if(t.id==="hoD"){ ui.hoDate=t.value; return; }
   if(t.id==="tdP"){ ui.tdPeriod=t.value; renderMain(); return; }
   if(t.id==="tdNum"){ const v=t.value.trim(); const td=S.todos[t.dataset.id]; if(!td) return; const nums={...(td.nums||{})}; if(v) nums[t.dataset.p]=v; else delete nums[t.dataset.p]; ui.numEdit=null; if(await patch("todos",td.id,{nums})) toast(v?`이 회차를 ${v}${td.numUnit||""}(으)로 정했어요.`:"자동 번호로 되돌렸어요."); return; }
   if(t.id==="tdNumOn"){ const g=$("#tdNumBox"); if(g) g.hidden=!t.checked; return; }
@@ -1523,14 +1393,6 @@ document.addEventListener("submit", async ev => {
       if(s.type==="pinchange"){ closeSheet(); toast("비밀번호를 설정했어요. 다음부터 이 비밀번호로 들어와요."); }
       else { ui.me=String(no); closeSheet(); refresh(); toast(`${S.students[no]?.name||""} 반가워요! 비밀번호를 만들었어요.`); }
     }catch(e){ if(e.code==="rate_limited" && e.retry) lockUntil=Date.now()+e.retry*1000; toast(e.message||"비밀번호를 저장하지 못했어요."); } }
-  if(f.id==="fHoli"){ const date=$("#hoD").value, name=$("#hoN").value.trim()||"휴일"; if(!date) return; if(await put("dayoff",`h_${date}`,{type:"holiday",date,name})){ ui.hoDate=date; renderSheet(); renderMain(); toast(`${lkDate(date)}을(를) 휴일로 정했어요.`); } }
-  if(f.id==="fAbs"){ const date=$("#abD").value, reason=$("#abR").value.trim(); if(!date) return; if(!ui.absSel.length){ toast("결석한 학생을 골라 주세요."); return; } let n=0;
-    for(const no of [...ui.absSel].sort((a,b)=>a-b)){ if(await put("absent",`${date}__${no}`,{type:"absent",date,no,reason,by: ui.role==="teacher"?"t":"c", ...(ui.role==="teacher"?{}:{checker:+ui.me}),at:new Date().toISOString()})) n++; }
-    ui.absSel=[]; ui.abReason=""; renderSheet(); renderMain(); toast(`${n}명을 ${lkDate(date)} 결석으로 처리했어요.`); }
-  if(f.id==="fLink"){ const sid=ui.sheet.id; const items=parseLinks($("#lkU").value); const title=$("#lkT").value.trim(), date=$("#lkD").value, note=$("#lkN").value.trim();
-    if(!title||!date) return; if(!items.length){ toast("올바른 링크 주소를 한 개 이상 넣어 주세요."); return; }
-    if(sid){ if(await patch("links",sid,{title,date,note,items})){ closeSheet(); toast("링크를 고쳤어요."); } }
-    else { const id=uid(); if(await put("links",id,{id,title,date,note,items,createdAt:new Date().toISOString()})){ closeSheet(); renderMain(); toast("학생들에게 링크를 보냈어요."); } } }
   if(f.id==="fTodo"){ const sid=ui.sheet.id; const type=f.querySelector("input[name=tdType]:checked").value;
     const data={ cat:f.querySelector("input[name=tdCat]:checked")?.value||TD_CATS[0], title:$("#tdT").value.trim(), desc:$("#tdD").value.trim(), type, weekday:+$("#tdW").value, weekends: !!$("#tdWE")?.checked, numOn: type==="weekly" && !!$("#tdNumOn")?.checked, numStart: +($("#tdNS")?.value||1), numUnit: $("#tdNU")?.value.trim()||"", start:(type==="daily"?$("#tdS2").value:$("#tdS").value)||ymd(today0()), due: type==="once" ? $("#tdDue").value : "" };
     if(!data.title) return; if(type==="once" && !data.due){ toast("마감일을 골라 주세요."); return; }
