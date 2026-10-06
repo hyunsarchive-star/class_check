@@ -342,15 +342,15 @@ button.cw:hover{transform:scale(1.08);text-decoration:line-through;text-decorati
 @media (max-width:640px){.tdrow{grid-template-columns:8px minmax(0,1fr) auto;row-gap:8px}.tdrow .btn,.tdrow .tdby{grid-column:2/-1;justify-self:start}
  .tdtrow{grid-template-columns:8px minmax(0,1fr) auto 18px}.tdtrow .aprog{grid-column:2/-1;grid-row:2}}
 .s-pass{background:var(--st-pass);color:#fff}
-.s-full{background:var(--st-full);color:#fff}
-.c-full{background:var(--st-full);color:#fff;font-weight:700}
-.w-full{color:#fff;background:var(--st-full);font-family:var(--f-body);font-size:12px;font-weight:700}
-.dd-full{background:var(--st-full);color:#fff}
-.btn.full-o{border-width:1.5px!important;font-weight:700;background:color-mix(in srgb, var(--st-full) 10%, transparent);border-color:var(--st-full);color:var(--st-full)}
+.s-full{background:var(--st-full-soft);color:var(--st-full-ink)}
+.c-full{background:var(--st-full-soft);color:var(--st-full-ink);font-weight:700}
+.w-full{color:var(--st-full-ink);background:var(--st-full-soft);font-family:var(--f-body);font-size:12px;font-weight:700}
+.dd-full{background:var(--st-full-soft);color:var(--st-full-ink)}
+.btn.full-o{border-width:1.5px!important;font-weight:700;background:color-mix(in srgb, var(--st-full) 10%, transparent);border-color:var(--st-full);color:var(--st-full-ink)}
 .btn.full-o:hover{background:color-mix(in srgb, var(--st-full) 20%, transparent)}
-:root{--st-full:#1F6FE5}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--st-full:#3D85F0}}
-:root[data-theme="dark"]{--st-full:#3D85F0}
+:root{--st-full:var(--tc-3);--st-full-soft:color-mix(in srgb, var(--tc-3) 22%, var(--surface));--st-full-ink:#1D7CAE}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--st-full-ink:#7CC6EE}}
+:root[data-theme="dark"]{--st-full-ink:#7CC6EE}
 .btn.pass{background:var(--st-pass);border-color:var(--st-pass);color:#fff}
 .btn.ok-o{background:color-mix(in srgb, var(--st-done) 10%, transparent);border:1.5px solid var(--st-done);color:var(--st-done);font-weight:700}
 .btn.ok-o:hover{background:color-mix(in srgb, var(--st-done) 20%, transparent)}
@@ -472,7 +472,7 @@ span.rchip{cursor:default}
 .w-pend{box-shadow:inset 0 0 0 2px var(--st-sent);}
 .c-pend{box-shadow:inset 0 0 0 2px var(--st-sent)}
 .wst.haspend{background:var(--st-sent-soft)!important}
-.wcell.w-full,.cbtn.c-full,.ovb.c-full{background:var(--st-full);color:#fff;font-family:var(--f-body);font-size:13px;font-weight:800}
+.wcell.w-full,.cbtn.c-full,.ovb.c-full{background:var(--st-full-soft);color:var(--st-full-ink);font-family:var(--f-body);font-size:13px;font-weight:800}
 .wmatrix tbody tr,.wmatrix td{height:auto}
 .wcell{min-height:52px}
 .wknav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -946,7 +946,7 @@ function doneSection(me, done){
         const st=dState(d); return `<div class="dline"><span class="dlt">${esc(t.title)}</span><span class="dld">마감 ${md(i.due)}</span><span class="cchip ${st==="pass"?"c-pass":st==="full"?"c-full":"c-done"}">${st==="pass"?"면제권":st==="full"?"💯 만점":isExam(t)?"준비 완료":"완료"}</span>${d.by!=="s"?`<span class="dlby">${d.by==="c"?"도우미":"선생님"}</span>`:`<button class="linkbtn dlundo" data-act="tdUndo" data-k="${doneKey(t.id,i.period,me)}">되돌리기</button>`}</div>`;
       }).join("") || `<p class="muted" style="padding:8px 16px;margin:0">아직 완료한 일이 없어요.</p>`;
     }
-    return `<div class="dgroup" style="--tc:${tdColor(c)}"><button class="dghead" aria-expanded="${!!open}" data-act="doneGrp" data-c="${esc(c)}"><span class="dgblk"></span><b>${esc(c)}</b><span class="muted">완료 ${g.length}개${nf?` · <b style="color:var(--st-full)">💯 만점 ${nf}</b>`:""}${np?` · 면제권 ${np}`:""}</span><span class="chev">${open?"▴":"▾"}</span></button>${open?`<div class="dglist">${inner}</div>`:""}</div>`; }).join("");
+    return `<div class="dgroup" style="--tc:${tdColor(c)}"><button class="dghead" aria-expanded="${!!open}" data-act="doneGrp" data-c="${esc(c)}"><span class="dgblk"></span><b>${esc(c)}</b><span class="muted">완료 ${g.length}개${nf?` · <b style="color:var(--st-full-ink)">💯 만점 ${nf}</b>`:""}${np?` · 면제권 ${np}`:""}</span><span class="chev">${open?"▴":"▾"}</span></button>${open?`<div class="dglist">${inner}</div>`:""}</div>`; }).join("");
   return `<section class="panel"><h2>완료한 일 <span class="muted">${done.length}</span></h2><div class="dgroups">${groups}</div></section>`;
 }
 function todoStudent(){
@@ -1092,7 +1092,7 @@ function weeklyMatrix(t, ins, asChecker){
       return `<tr class="${i.period===curP?"cur":""}"><th class="wdate"><span class="wd">${md(i.due)}</span>${chipEl}<small>${n}/${list.length} <button class="allbtn inl" data-act="tdAll" data-id="${t.id}" data-p="${i.period}" title="이 회차 남은 학생 모두 O로">✓ 모두</button></small></th>${blk.map(st=>{ const c=cellOf(t,i,st.no); const d=S.todoDone[doneKey(t.id,i.period,st.no)];
         return `<td><button class="wcell ${WSYM[c][1]}${isPend(d)?" w-pend":""}" data-act="tdToggle" data-id="${t.id}" data-p="${i.period}" data-no="${st.no}" title="${st.no}번 ${esc(st.name)} · ${c==="wait"?"아직":(CELL[c]||WSYM[c])[0]}${d&&d.book?` · 📖 ${esc(d.book)}`:""}${isPend(d)?" · 학생이 냄, 눌러서 확인":""}${d&&d.by==="c"?` · 도우미 ${d.checker}번 체크`:""}" aria-label="${st.no}번 ${esc(st.name)} ${md(i.due)} ${c==="wait"?"아직":(CELL[c]||WSYM[c])[0]}${isPend(d)?" 확인 필요":""}"><span class="wsym">${WSYM[c][0]}${isPend(d)?`<i class="pend">!</i>`:""}</span>${d&&d.book&&dState(d)?`<span class="wbook">${esc(d.book)}</span>`:""}</button></td>`; }).join("")}</tr>`; }).join("")}
     </tbody></table></div>`;
-  return `<div class="legend"><span class="cchip c-done">O 제출</span>${isSpell(t)?`<span class="cchip c-full">💯 만점</span>`:""}<span class="cchip c-late">X 못 냄·늦음</span><span class="cchip c-pass">면제권</span><span class="cchip c-abs">결석</span><span class="cchip c-late"><i class="pend" style="margin:0 3px 0 0">!</i>학생이 냄 · 확인 전</span>${(()=>{ const n=pendingKeys(r=>r.tid===t.id).length; return n?`<button class="btn warn sm" data-act="confirmTodo" data-id="${t.id}">! ${n}개 한 번에 확인</button>`:""; })()}<span><b>!</b> 칸을 누르면 확인 완료, 한 번 더 누르면 학생에게 다시 하라고 돌려보내요. 빈칸은 누를 때마다 O → ${isSpell(t)?"만점 → ":""}면제 → 결석 → 빈칸. 마감일에 결석한 학생은 ‘결석’으로 보이고, 나중에 내면 그대로 확인할 수 있어요. "✓ 모두"는 그 회차를 한 번에 확인·O 처리해요.${asChecker?"":" 회차 딱지를 누르면 번호를 바꿀 수 있어요."}</span></div>${blocks.map(table).join("")}`;
+  return `<div class="legend"><span class="cchip c-done">O 제출</span>${isSpell(t)?`<span class="cchip c-full">💯 만점</span>`:""}<span class="cchip c-late">X 못 냄·늦음</span>${isSpell(t)?"":`<span class="cchip c-pass">면제권</span>`}<span class="cchip c-abs">결석</span><span class="cchip c-late"><i class="pend" style="margin:0 3px 0 0">!</i>학생이 냄 · 확인 전</span>${(()=>{ const n=pendingKeys(r=>r.tid===t.id).length; return n?`<button class="btn warn sm" data-act="confirmTodo" data-id="${t.id}">! ${n}개 한 번에 확인</button>`:""; })()}<span><b>!</b> 칸을 누르면 확인 완료, 한 번 더 누르면 학생에게 다시 하라고 돌려보내요. 빈칸은 누를 때마다 O → ${isSpell(t)?"만점":"면제"} → 결석 → 빈칸. 마감일에 결석한 학생은 ‘결석’으로 보이고, 나중에 내면 그대로 확인할 수 있어요. "✓ 모두"는 그 회차를 한 번에 확인·O 처리해요.${asChecker?"":" 회차 딱지를 누르면 번호를 바꿀 수 있어요."}</span></div>${blocks.map(table).join("")}`;
 }
 const ckActive = c => c && c.no && (!c.until || parseD(c.until) >= today0());
 const activeCheckers = t => [...(t.checkers||[]), ...(t.checker?[t.checker]:[])].filter(ckActive).filter((c,i,a)=>a.findIndex(x=>x.no===c.no)===i);
@@ -1176,22 +1176,22 @@ function calInstances(t, a, b){
     out.push({period:ymd(w),due,num:num!==null?`${num}${t.numUnit||""}`:""}); }
   return out;
 }
+const CAL_NAME = {"주제글쓰기 제출":"주제글쓰기","독서록 제출":"독서록","맞춤법 오답노트":"맞춤법","오늘하루 작성":"오늘하루"};
 function calView(me){
   const base = ui.calMonth ? parseD(ui.calMonth) : new Date(today0().getFullYear(), today0().getMonth(), 1);
   const y=base.getFullYear(), mo=base.getMonth(); const first=new Date(y,mo,1), last=new Date(y,mo+1,0);
   const byDay={}; const add=(d,x)=>{ (byDay[ymd(d)] = byDay[ymd(d)]||[]).push(x); };
   todoList().forEach(t=>calInstances(t,first,last).forEach(i=>{ if(excused(t,i.period,me)) return; const rec=S.todoDone[doneKey(t.id,i.period,me)]; const st=dState(rec);
-    const short = t.type==="daily" ? t.cat.replace(/ 작성$/,"") : (i.num ? `${t.title} ${i.num}` : t.title);
-    add(i.due,{color:tdColor(t.cat), txt:short, done:!!st, late:!st && i.due<today0() && !(isExam(t)), sub:st==="pass"?"면제":st==="full"?"만점":"" }); }));
-  myDms(me).forEach(m=>{ if(!m.date) return; const d=parseD(m.date); if(d<first||d>last) return; add(d,{color:"var(--st-done)", txt:"💌 "+m.title, done:!!dmDoneOf(m.id,me), late:false, sub:""}); });
+    const nm = isExam(t) ? t.title : (CAL_NAME[t.cat] || t.title); const numOnly = i.num ? String(i.num).match(/^\d+/)?.[0] : null;
+    add(i.due,{color:tdColor(t.cat), txt: numOnly && t.type!=="daily" ? `${nm} ${numOnly}번` : nm, done:!!st, late:!st && i.due<today0() && !(isExam(t)), sub:"" }); }));
+  myDms(me).forEach(m=>{ if(!m.date) return; const d=parseD(m.date); if(d<first||d>last) return; add(d,{color:"var(--st-done)", txt:"개별 알림", done:!!dmDoneOf(m.id,me), late:false, sub:""}); });
   const lead=first.getDay(); const cells=[]; for(let i=0;i<lead;i++) cells.push(`<div class="calc out"></div>`);
   for(let d=1; d<=last.getDate(); d++){ const dt=new Date(y,mo,d); const key=ymd(dt); const items=byDay[key]||[]; const isT=+dt===+today0(); const w=dt.getDay();
-    cells.push(`<div class="calc${isT?" today":""}${w===0?" sun":w===6?" sat":""}"><div class="calday"><b>${d}</b>${isHoliday(key)?`<span class="calholi">휴일</span>`:""}</div>${items.map(x=>`<span class="calchip${x.done?" done":""}${x.late?" late":""}" style="--tc:${x.color}" title="${esc(x.txt)}${x.done?" · 완료":x.late?" · 밀림":""}">${x.done?"✓ ":""}${esc(x.txt)}${x.sub?` · ${x.sub}`:""}</span>`).join("")}</div>`); }
+    cells.push(`<div class="calc${isT?" today":""}${w===0?" sun":w===6?" sat":""}"><div class="calday"><b>${d}</b>${isHoliday(key)?`<span class="calholi">휴일</span>`:""}</div>${items.map(x=>`<span class="calchip${x.done?" done":""}${x.late?" late":""}" style="--tc:${x.color}" title="${esc(x.txt)}${x.done?" · 끝냄":x.late?" · 밀림":""}">${esc(x.txt)}</span>`).join("")}</div>`); }
   while(cells.length%7) cells.push(`<div class="calc out"></div>`);
-  return `<section class="panel"><div class="ahead"><div><h2>📅 ${y}년 ${mo+1}월 달력</h2><p class="muted" style="margin:4px 0 0">마감일에 색깔 딱지가 붙어요. 끝낸 일은 회색이에요.</p></div>
+  return `<section class="panel"><div class="ahead"><div><h2>📅 ${y}년 ${mo+1}월 달력</h2></div>
     <div class="actions"><button class="btn ghost sm" data-act="calNav" data-d="-1" aria-label="지난달">◀</button><button class="btn ghost sm" data-act="calNav" data-d="0">이번 달</button><button class="btn ghost sm" data-act="calNav" data-d="1" aria-label="다음달">▶</button></div></div>
-    <div class="cal">${WDN.map((n,i)=>`<div class="calh${i===0?" sun":i===6?" sat":""}">${n}</div>`).join("")}${cells.join("")}</div>
-    <div class="legend" style="margin-top:10px">${TD_CATS.map(c=>`<span class="calchip" style="--tc:${tdColor(c)}">${esc(c)}</span>`).join("")}<span class="calchip" style="--tc:var(--st-done)">💌 개별 알림</span><span class="calchip done">✓ 끝낸 일</span><span class="calchip late" style="--tc:var(--muted)">밀린 일</span></div></section>`;
+    <div class="cal">${WDN.map((n,i)=>`<div class="calh${i===0?" sun":i===6?" sat":""}">${n}</div>`).join("")}${cells.join("")}</div></section>`;
 }
 /* 생각모으기 */
 const normW = w => String(w||"").trim().replace(/\s+/g," ").replace(/[.,!?~·…"'“”‘’]+$/g,"");
@@ -1558,7 +1558,7 @@ document.addEventListener("click", async ev => {
       else if(rec.by==="s"){ await put("todoDone",k,{...rec,...base,kind:rec.kind,orig:"s",submittedAt:rec.at}); toast(`${no}번 ${cur==="pass"?"면제권":cur==="full"?"만점":"제출"}을 확인했어요.${rec.book?` 📖 ${rec.book}`:""}`); }
       else if(rec.orig==="s"){ await put("todoDone",k,{...base,kind:"redo",book:rec.book||""}); toast(`${no}번 학생 화면에 다시 할 일로 보냈어요.`); }
       else if(cur==="done" && isSpell(tdT)) await put("todoDone",k,{...base,kind:"full"});
-      else if(cur==="done"||cur==="full"){ const td=S.todos[id]; const pb = td && PASS_CATS.includes(td.cat) ? passBlocked(td,t.dataset.p,no) : "면제권을 쓸 수 없는 할 일이에요."; if(pb && ui.role!=="teacher"){ await del("todoDone",k); toast(pb); } else { await put("todoDone",k,{...base,kind:"pass"}); if(pb) toast(`선생님 권한으로 면제 처리했어요. (${pb})`); } }
+      else if(cur==="done"||(cur==="full" && !isSpell(tdT))){ const td=S.todos[id]; const pb = td && PASS_CATS.includes(td.cat) ? passBlocked(td,t.dataset.p,no) : "면제권을 쓸 수 없는 할 일이에요."; if(pb && ui.role!=="teacher"){ await del("todoDone",k); toast(pb); } else { await put("todoDone",k,{...base,kind:"pass"}); if(pb) toast(`선생님 권한으로 면제 처리했어요. (${pb})`); } }
       else { await del("todoDone",k); if(tdT && tdT.type!=="once"){ const ad=absDateOf(tdT,t.dataset.p); if(ad && await setAbsence(ad,no,true)) toast(`${no}번 ${lkDate(ad)} 결석으로 바꿨어요.`); } } break; }
     case "doneGrp": { ui.doneOpen = ui.doneOpen||{}; const c=t.dataset.c; ui.doneOpen[c]=!ui.doneOpen[c]; renderMain(); break; }
     case "numEdit": ui.numEdit = ui.numEdit===t.dataset.k ? null : t.dataset.k; renderMain(); setTimeout(()=>$("#tdNum")?.focus(),0); break;
