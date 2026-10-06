@@ -342,6 +342,15 @@ button.cw:hover{transform:scale(1.08);text-decoration:line-through;text-decorati
 @media (max-width:640px){.tdrow{grid-template-columns:8px minmax(0,1fr) auto;row-gap:8px}.tdrow .btn,.tdrow .tdby{grid-column:2/-1;justify-self:start}
  .tdtrow{grid-template-columns:8px minmax(0,1fr) auto 18px}.tdtrow .aprog{grid-column:2/-1;grid-row:2}}
 .s-pass{background:var(--st-pass);color:#fff}
+.s-full{background:var(--st-full);color:#fff}
+.c-full{background:var(--st-full);color:#fff;font-weight:700}
+.w-full{color:#fff;background:var(--st-full);font-family:var(--f-body);font-size:12px;font-weight:700}
+.dd-full{background:var(--st-full);color:#fff}
+.btn.full-o{border-width:1.5px!important;font-weight:700;background:color-mix(in srgb, var(--st-full) 10%, transparent);border-color:var(--st-full);color:var(--st-full)}
+.btn.full-o:hover{background:color-mix(in srgb, var(--st-full) 20%, transparent)}
+:root{--st-full:#1F6FE5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--st-full:#3D85F0}}
+:root[data-theme="dark"]{--st-full:#3D85F0}
 .btn.pass{background:var(--st-pass);border-color:var(--st-pass);color:#fff}
 .btn.ok-o{background:color-mix(in srgb, var(--st-done) 10%, transparent);border:1.5px solid var(--st-done);color:var(--st-done);font-weight:700}
 .btn.ok-o:hover{background:color-mix(in srgb, var(--st-done) 20%, transparent)}
@@ -463,6 +472,7 @@ span.rchip{cursor:default}
 .w-pend{box-shadow:inset 0 0 0 2px var(--st-sent);}
 .c-pend{box-shadow:inset 0 0 0 2px var(--st-sent)}
 .wst.haspend{background:var(--st-sent-soft)!important}
+.wcell.w-full,.cbtn.c-full,.ovb.c-full{background:var(--st-full);color:#fff;font-family:var(--f-body);font-size:13px;font-weight:800}
 .wmatrix tbody tr,.wmatrix td{height:auto}
 .wcell{min-height:52px}
 .wknav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -481,11 +491,12 @@ span.rchip{cursor:default}
 .wkov td.dsum .cchip+.cchip,.dmatrix td.dsum .cchip+.cchip{margin-left:4px}
 .lkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:18px}
 .lkcard{position:relative;border:none;border-radius:12px;background:var(--st-wait);color:var(--st-wait-ink);min-height:84px;padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;transition:transform .12s, box-shadow .12s}
-.lkcard.lk-link{background:var(--lk-link);color:var(--lk-link-ink)}
+.lkcard.lk-link{background:var(--lk-link);color:var(--lk-link-ink);box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--tc-2) 35%, transparent)}
+.lkcard.lk-link .lkname{color:var(--ink)}
 .lkcard.lk-note{background:var(--lk-note);color:var(--lk-note-ink)}
-:root{--lk-link:#43A96F;--lk-link-ink:#FFFFFF;--lk-note:#FFEB6B;--lk-note-ink:#5C4A00}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lk-link:#3C9A64;--lk-note:#E8CF4A;--lk-note-ink:#2A2200}}
-:root[data-theme="dark"]{--lk-link:#3C9A64;--lk-note:#E8CF4A;--lk-note-ink:#2A2200}
+:root{--lk-link:color-mix(in srgb, var(--tc-2) 20%, var(--surface));--lk-link-ink:#1C6E47;--lk-note:#FFEB6B;--lk-note-ink:#5C4A00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lk-link-ink:#86D9AC;--lk-note:#E8CF4A;--lk-note-ink:#2A2200}}
+:root[data-theme="dark"]{--lk-link-ink:#86D9AC;--lk-note:#E8CF4A;--lk-note-ink:#2A2200}
 .lkcard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .lkdate{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;letter-spacing:.2px}
 .lkname{font-size:14px;font-weight:500;opacity:.9;word-break:keep-all;line-height:1.35}
@@ -876,13 +887,14 @@ function instancesOf(t, days){
   return out.reverse();
 }
 const doneKey = (tid,period,no) => `${tid}__${period}__${no}`;
-const dState = d => !d || d.kind==="redo" ? null : d.kind==="pass" ? "pass" : "done";
+const dState = d => !d || d.kind==="redo" ? null : d.kind==="pass" ? "pass" : d.kind==="full" ? "full" : "done";
+const isSpell = t => t && t.cat==="맞춤법 오답노트";
 function passBlocked(t, period, no){ if(!PASS_CATS.includes(t.cat)) return "면제권을 쓸 수 없는 할 일이에요.";
   const ins = [...instancesOf(t, 35)].reverse().filter(x=>!excused(t,x.period,no)); const i = ins.findIndex(x=>x.period===period); if(i<0) return null;
   const isP = j => j>=0 && j<ins.length && dState(S.todoDone[doneKey(t.id,ins[j].period,no)])==="pass";
   if(isP(i-1) || isP(i+1)) return t.type==="daily" ? "면제권은 이틀 연속으로 쓸 수 없어요." : "면제권은 2주 연속으로 쓸 수 없어요.";
   return null; }
-const ddBadge = (due, d) => { if(d==="pass") return `<span class="dd dd-pass">면제권</span>`; if(d) return `<span class="dd dd-ok">완료</span>`; const n=dayDiff(due,today0()); return n>0?`<span class="dd ${n<=2?"dd-soon":""}">D-${n}</span>`: n===0?`<span class="dd dd-today">오늘까지</span>`:`<span class="dd dd-late">${-n}일 지남</span>`; };
+const ddBadge = (due, d) => { if(d==="pass") return `<span class="dd dd-pass">면제권</span>`; if(d==="full") return `<span class="dd dd-full">💯 만점</span>`; if(d) return `<span class="dd dd-ok">완료</span>`; const n=dayDiff(due,today0()); return n>0?`<span class="dd ${n<=2?"dd-soon":""}">D-${n}</span>`: n===0?`<span class="dd dd-today">오늘까지</span>`:`<span class="dd dd-late">${-n}일 지남</span>`; };
 const ddText = due => { const n=dayDiff(due,today0()); return n>0?`${n}일 남음`:n===0?"오늘 마감":`${-n}일 지남`; };
 const typeLbl = t => t.type==="once" ? "한 번" : t.type==="daily" ? `매일 (${t.weekends?"주말 포함":"월~금"})${t.endedAt?" · 보내기 멈춤":""}` : `매주 ${WDN[t.weekday??5]}요일까지${t.numOn?" · 회차마다 번호 +1":""}${t.endedAt?" · 보내기 멈춤":""}`;
 const isNew = t => t.createdAt && (Date.now()-new Date(t.createdAt).getTime()) < 2*86400000;
@@ -892,9 +904,9 @@ function todoView(){ return ui.role==="teacher" ? todoTeacher() : todoStudent();
 function doneSection(me, done){
   const all = todoList().filter(t=>!(isExam(t) && t.type==="once" && parseD(t.due)<today0())); const cats = TD_CATS.filter(c=>all.some(t=>t.cat===c));
   if(!cats.length) return `<section class="panel"><h2>완료한 일</h2><p class="muted">아직 받은 할 일이 없어요.</p></section>`;
-  const cellTxt = (t,c) => (t.type==="daily"?CELL_D:{done:["제출"],pass:["면제권"],late:["못 냄"],wait:["아직"],abs:["결석"],holi:["휴일"]})[c][0];
-  const cls = c => ({done:"c-done",pass:"c-pass",late:"c-late",wait:"c-wait",holi:"c-holi",abs:"c-abs"})[c];
-  const groups = cats.map(c=>{ const ts = all.filter(t=>t.cat===c); const g = done.filter(x=>x.t.cat===c); const np=g.filter(x=>dState(x.d)==="pass").length; const open=(ui.doneOpen||{})[c];
+  const cellTxt = (t,c) => (t.type==="daily"?CELL_D:{done:["제출"],full:["만점"],pass:["면제권"],late:["못 냄"],wait:["아직"],abs:["결석"],holi:["휴일"]})[c][0];
+  const cls = c => ({done:"c-done",full:"c-full",pass:"c-pass",late:"c-late",wait:"c-wait",holi:"c-holi",abs:"c-abs"})[c];
+  const groups = cats.map(c=>{ const ts = all.filter(t=>t.cat===c); const g = done.filter(x=>x.t.cat===c); const np=g.filter(x=>dState(x.d)==="pass").length; const nf=g.filter(x=>dState(x.d)==="full").length; const open=(ui.doneOpen||{})[c];
     let inner="";
     if(open){
       inner = ts.map(t=>{
@@ -908,10 +920,10 @@ function doneSection(me, done){
           return `<div class="sline"><div class="sltitle"><span class="sldot"></span>${esc(t.title)}</div><div class="wkstrip">${ins.map(i=>{ const c=cellOf(t,i,me);
             return `<span class="wsc ${cls(c)}"><small>${md(i.due)}</small>${i.numLbl?`<span class="numtag">${esc(i.numLbl)}</span>`:`<span class="numtag">${i.round}회</span>`}${(()=>{ const r=S.todoDone[doneKey(t.id,i.period,me)]; return r&&r.book&&dState(r)?`<span class="bookname" title="${esc(r.book)}">📖 ${esc(r.book)}</span>`:""; })()}<b>${cellTxt(t,c)}</b></span>`; }).join("") || `<span class="muted">아직 회차가 없어요.</span>`}</div></div>`; }
         const i=instancesOf(t)[0]; if(!i) return ""; if(isExam(t) && i.due<today0()) return ""; const d=S.todoDone[doneKey(t.id,i.period,me)]; if(!dState(d)) return "";
-        const st=dState(d); return `<div class="dline"><span class="dlt">${esc(t.title)}</span><span class="dld">마감 ${md(i.due)}</span><span class="cchip ${st==="pass"?"c-pass":"c-done"}">${st==="pass"?"면제권":isExam(t)?"준비 완료":"완료"}</span>${d.by!=="s"?`<span class="dlby">${d.by==="c"?"도우미":"선생님"}</span>`:`<button class="linkbtn dlundo" data-act="tdUndo" data-k="${doneKey(t.id,i.period,me)}">되돌리기</button>`}</div>`;
+        const st=dState(d); return `<div class="dline"><span class="dlt">${esc(t.title)}</span><span class="dld">마감 ${md(i.due)}</span><span class="cchip ${st==="pass"?"c-pass":st==="full"?"c-full":"c-done"}">${st==="pass"?"면제권":st==="full"?"💯 만점":isExam(t)?"준비 완료":"완료"}</span>${d.by!=="s"?`<span class="dlby">${d.by==="c"?"도우미":"선생님"}</span>`:`<button class="linkbtn dlundo" data-act="tdUndo" data-k="${doneKey(t.id,i.period,me)}">되돌리기</button>`}</div>`;
       }).join("") || `<p class="muted" style="padding:8px 16px;margin:0">아직 완료한 일이 없어요.</p>`;
     }
-    return `<div class="dgroup" style="--tc:${tdColor(c)}"><button class="dghead" aria-expanded="${!!open}" data-act="doneGrp" data-c="${esc(c)}"><span class="dgblk"></span><b>${esc(c)}</b><span class="muted">완료 ${g.length}개${np?` · 면제권 ${np}`:""}</span><span class="chev">${open?"▴":"▾"}</span></button>${open?`<div class="dglist">${inner}</div>`:""}</div>`; }).join("");
+    return `<div class="dgroup" style="--tc:${tdColor(c)}"><button class="dghead" aria-expanded="${!!open}" data-act="doneGrp" data-c="${esc(c)}"><span class="dgblk"></span><b>${esc(c)}</b><span class="muted">완료 ${g.length}개${nf?` · <b style="color:var(--st-full)">💯 만점 ${nf}</b>`:""}${np?` · 면제권 ${np}`:""}</span><span class="chev">${open?"▴":"▾"}</span></button>${open?`<div class="dglist">${inner}</div>`:""}</div>`; }).join("");
   return `<section class="panel"><h2>완료한 일 <span class="muted">${done.length}</span></h2><div class="dgroups">${groups}</div></section>`;
 }
 function todoStudent(){
@@ -926,7 +938,7 @@ function todoStudent(){
     const btns = d ? (d.by==="t"||d.by==="c"?`<span class="muted tdby">${d.by==="c"?(st==="pass"?"도우미가 면제 처리":"도우미 확인 ✓"):(st==="pass"?"선생님이 면제 처리":"선생님 확인 ✓")}</span>`:`<button class="btn ghost sm" data-act="tdUndo" data-k="${k}">되돌리기</button>`)
       : ui.confirm===`book_${k}` ? `<span class="tdbtns bookask"><input class="inp bookin" id="bookIn" maxlength="40" placeholder="이번에 읽은 책 이름" aria-label="책 이름" value="${esc(ui.bookDraft||"")}"><button class="btn ok sm" data-act="tdDoneBook" data-id="${t.id}" data-p="${inst.period}">제출</button><button class="btn ghost sm" data-act="cancelConfirm">취소</button></span>`
       : ui.confirm===`pass_${k}` ? `<span class="tdbtns${isBook(t)?" bookask":""}">${isBook(t)?`<input class="inp bookin" id="bookIn" maxlength="40" placeholder="이번 책 이름" aria-label="책 이름" value="${esc(ui.bookDraft||"")}">`:""}<span class="muted">면제권을 쓸까요?</span><button class="btn pass sm" data-act="tdPass" data-id="${t.id}" data-p="${inst.period}">쓰기</button><button class="btn ghost sm" data-act="cancelConfirm">취소</button></span>`
-      : `<span class="tdbtns"><button class="btn ok-o sm" ${isBook(t)?`data-act="tdAskBook" data-k="${k}"`:`data-act="tdDone"`} data-id="${t.id}" data-p="${inst.period}">${isExam(t)?"💪 준비 완료!":"✓ 다 했어요"}</button>${canPass?(pb?`<button class="btn pass-o sm" disabled title="${esc(pb)}">🎟 연속 사용 불가</button>`:`<button class="btn pass-o sm" data-act="tdAskPass" data-k="${k}">🎟 면제권</button>`):""}</span>`;
+      : `<span class="tdbtns"><button class="btn ok-o sm" ${isBook(t)?`data-act="tdAskBook" data-k="${k}"`:`data-act="tdDone"`} data-id="${t.id}" data-p="${inst.period}">${isExam(t)?"💪 준비 완료!":"✓ 다 했어요"}</button>${isSpell(t)?`<button class="btn full-o sm" data-act="tdFull" data-id="${t.id}" data-p="${inst.period}">💯 만점</button>`:""}${canPass?(pb?`<button class="btn pass-o sm" disabled title="${esc(pb)}">🎟 연속 사용 불가</button>`:`<button class="btn pass-o sm" data-act="tdAskPass" data-k="${k}">🎟 면제권</button>`):""}</span>`;
     return `<div class="tdrow${d?" isdone":""}" style="--tc:${tdColor(t.cat)}"><span class="tdblk"></span>
     <div class="tdmain"><div class="tdcat">${esc(t.cat)}${rec&&rec.kind==="redo"?` <span class="redotag">↩ ${rec.by==="c"?"도우미":"선생님"} 확인: 다시 해 주세요</span>`:isNew(t)&&!d?` <span class="newtag">NEW</span>`:""}</div><b>${tdTitle(t,inst)}</b><span class="muted">${t.type==="once"?"":t.type==="daily"?"매일 · ":`${inst.label} · `}${t.type==="daily"?`${md(inst.due)} 하루`:`마감 ${md(inst.due)}`}${t.desc?` · ${esc(t.desc)}`:""}</span></div>
     ${!d && t.type==="weekly" && isAbsent(ymd(inst.due),me) ? `<span class="dd dd-abs" title="마감일에 결석했어요. 지금 내도 돼요.">결석 · 지금 내도 돼요</span>` : ddBadge(inst.due, st)}${btns}</div>`; };
@@ -960,8 +972,8 @@ function weekOverview(){
     return { t, inst, cols:[{ inst, head: inst?`마감<small>${md(inst.due)}</small>`:`<small>회차 없음</small>`, today:false }] };
   });
   const isD = t => t.type==="daily";
-  const txt = (t,c) => isD(t) ? CELL_D[c][0] : ({done:"O",pass:"면제",late:"X",wait:"",abs:"결석",holi:"휴일"})[c];
-  const cls = c => ({done:"c-done",pass:"c-pass",late:"c-late",wait:"c-wait",holi:"c-holi",abs:"c-abs"})[c];
+  const txt = (t,c) => isD(t) ? CELL_D[c][0] : ({done:"O",full:"만점",pass:"면제",late:"X",wait:"",abs:"결석",holi:"휴일"})[c];
+  const cls = c => ({done:"c-done",full:"c-full",pass:"c-pass",late:"c-late",wait:"c-wait",holi:"c-holi",abs:"c-abs"})[c];
   const head1 = groups.map(g=>`<th colspan="${g.cols.length}" class="ovg" style="--tc:${tdColor(g.t.cat)}">${esc(g.t.cat.replace(" 제출","").replace(" 작성",""))}${g.inst&&g.inst.numLbl?` <span class="numtag">${esc(g.inst.numLbl)}</span>`:""}</th>`).join("");
   const head2 = groups.map(g=>g.cols.map((c,k)=>`<th class="ovh${k===0?" gfirst":""}${c.today?" today":""}" style="--tc:${tdColor(g.t.cat)}">${c.head}${c.inst&&!c.holi?`<button class="allbtn" data-act="tdAll" data-id="${g.t.id}" data-p="${c.inst.period}" title="남은 학생 모두 확인">✓ 모두</button>`:""}</th>`).join("")).join("");
   const rows = list.map(st=>{ let late=0, pend=0;
@@ -971,7 +983,7 @@ function weekOverview(){
       const r=recOf(g.t,c.inst,st.no); const pd=isPend(r); if(s==="late") late++; if(pd) pend++;
       return `<td class="ovc${first}" style="--tc:${tdColor(g.t.cat)}"><button class="ovb ${cls(s)}${pd?" c-pend":""}" data-act="tdToggle" data-id="${g.t.id}" data-p="${c.inst.period}" data-no="${st.no}" title="${st.no}번 ${esc(st.name)} · ${esc(g.t.title)}${pd?" · 학생이 냄, 눌러서 확인":""}${r&&r.book?` · 📖 ${esc(r.book)}`:""}"><span>${txt(g.t,s)}${pd?`<i class="pend">!</i>`:""}</span>${r&&r.book&&dState(r)?`<span class="wbook">${esc(r.book)}</span>`:""}</button></td>`; }).join("")).join("");
     return `<tr><td class="c-no">${st.no}</td><td class="c-nm">${esc(st.name)}${pend?` <i class="pend" title="확인할 제출 ${pend}개">!</i>`:""}</td>${cells}<td class="dsum">${late?`<span class="cchip c-late">밀림 ${late}</span>`:""}${pend?`<span class="cchip c-wait">확인 ${pend}</span>`:""}${!late&&!pend?`<span class="muted">–</span>`:""}</td></tr>`; }).join("");
-  const foot = groups.map(g=>g.cols.map((c,k)=>{ if(c.holi) return `<td class="ovc${k===0?" gfirst":""}" style="--tc:${tdColor(g.t.cat)}">휴일</td>`; const ex = c.inst ? list.filter(st=>cellOf(g.t,c.inst,st.no)==="abs").length : 0; const n = c.inst ? list.filter(st=>["done","pass"].includes(cellOf(g.t,c.inst,st.no))).length : null; return `<td class="ovc${k===0?" gfirst":""}" style="--tc:${tdColor(g.t.cat)}">${n===null?"":`${n}/${list.length-ex}`}</td>`; }).join("")).join("");
+  const foot = groups.map(g=>g.cols.map((c,k)=>{ if(c.holi) return `<td class="ovc${k===0?" gfirst":""}" style="--tc:${tdColor(g.t.cat)}">휴일</td>`; const ex = c.inst ? list.filter(st=>cellOf(g.t,c.inst,st.no)==="abs").length : 0; const n = c.inst ? list.filter(st=>["done","full","pass"].includes(cellOf(g.t,c.inst,st.no))).length : null; return `<td class="ovc${k===0?" gfirst":""}" style="--tc:${tdColor(g.t.cat)}">${n===null?"":`${n}/${list.length-ex}`}</td>`; }).join("")).join("");
   const pendN = pendingKeys(r=>{ const td=S.todos[r.tid]; if(!td||!ts.includes(td)) return false; if(td.type==="daily") return r.period>=wk && r.period<=ymd(sun); return r.period===wk; }).length;
   return `${nav.replace('</div>', pendN?`<button class="btn warn sm" data-act="confirmWeek">! ${pendN}개 한 번에 확인</button></div>`:'</div>')}<div class="legend"><span class="cchip c-done">작성 · O</span><span class="cchip c-pass">면제권</span><span class="cchip c-late">미작성 · X</span><span class="cchip c-wait">아직</span><span class="cchip c-holi">휴일</span><span class="cchip c-abs">결석</span><span><i class="pend">!</i> 학생이 스스로 낸 칸이에요. 누르면 확인, 한 번 더 누르면 다시 하라고 돌려보내요. 빈칸은 누를 때마다 작성 → 면제권 → 안 함.</span></div>
     <div class="tablewrap"><table class="matrix wkov"><thead><tr><th class="c-no" rowspan="2">번호</th><th class="c-nm" rowspan="2">이름</th>${head1}<th rowspan="2">합계</th></tr><tr>${head2}</tr></thead><tbody>${rows}</tbody><tfoot><tr><td class="c-no"></td><td class="c-nm">완료</td>${foot}<td></td></tr></tfoot></table></div>`;
@@ -1007,8 +1019,8 @@ async function setAbsence(date,no,on){ if(on) return await put("absent",`${date}
 function pendingKeys(filter){ return Object.entries(S.todoDone).filter(([k,r])=>isPend(r) && filter(r)).map(([k])=>k); }
 async function confirmKeys(keys){ let n=0; for(const k of keys){ const r=S.todoDone[k]; if(!isPend(r)) continue; const td=S.todos[r.tid]; if(ui.role!=="teacher" && !(td && isChecker(td,+ui.me))) continue;
   if(await put("todoDone",k,{...r,by: ui.role==="teacher"?"t":"c", ...(ui.role==="teacher"?{}:{checker:+ui.me}),orig:"s",submittedAt:r.at,at:new Date().toISOString()})) n++; } return n; }
-const CELL = { done:["제출","c-done"], pass:["면제권","c-pass"], late:["미제출","c-late"], wait:["아직","c-wait"] };
-const CELL_D = { done:["작성","c-done"], pass:["면제권","c-pass"], late:["미작성","c-late"], wait:["아직","c-wait"], holi:["휴일","c-holi"], abs:["결석","c-abs"] };
+const CELL = { done:["제출","c-done"], full:["만점","c-full"], pass:["면제권","c-pass"], late:["미제출","c-late"], wait:["아직","c-wait"] };
+const CELL_D = { done:["작성","c-done"], full:["만점","c-full"], pass:["면제권","c-pass"], late:["미작성","c-late"], wait:["아직","c-wait"], holi:["휴일","c-holi"], abs:["결석","c-abs"] };
 function todoDetail(t, ins, cur){
   if(!ins.length) return `<div class="adetail"><p class="muted">첫 마감일이 아직 오지 않았어요.</p>${tdActions(t)}</div>`;
   if(isExam(t)){ const inst=cur||ins[0]; const ready=students().filter(st=>dState(S.todoDone[doneKey(t.id,inst.period,st.no)])); const notyet=students().filter(st=>!ready.includes(st));
@@ -1019,15 +1031,15 @@ function todoDetail(t, ins, cur){
   if(t.type==="weekly") return `<div class="adetail">${t.desc?`<p class="desc" style="margin:0">${esc(t.desc)}</p>`:""}<div class="ahead">${checkerCtl(t)}${tdActions(t)}</div>${weeklyMatrix(t, ins, false)}</div>`;
   if(!ui.tdPeriod || !ins.some(i=>i.period===ui.tdPeriod)) ui.tdPeriod = (cur||ins[0]).period;
   const inst = ins.find(i=>i.period===ui.tdPeriod);
-  const cnt={done:0,pass:0,wait:0,late:0};
+  const cnt={done:0,full:0,pass:0,wait:0,late:0};
   const cards = students().map(st=>{ const c=cellOf(t,inst,st.no); cnt[c]++; const d=S.todoDone[doneKey(t.id,inst.period,st.no)];
-    return `<button class="card ${c==="done"?"s-done":c==="pass"?"s-pass":c==="late"?"s-sent":"s-wait"}" data-act="tdToggle" data-id="${t.id}" data-p="${inst.period}" data-no="${st.no}"><span class="no">${st.no}</span><span><span class="nm">${esc(st.name)}</span><span class="sub">${c==="pass"?"🎟 면제권":c==="done"?(d.by==="t"?"선생님 확인":"완료"):c==="late"?ddText(inst.due):"아직"}</span></span></button>`; }).join("");
+    return `<button class="card ${c==="done"?"s-done":c==="full"?"s-full":c==="pass"?"s-pass":c==="late"?"s-sent":"s-wait"}" data-act="tdToggle" data-id="${t.id}" data-p="${inst.period}" data-no="${st.no}"><span class="no">${st.no}</span><span><span class="nm">${esc(st.name)}</span><span class="sub">${c==="pass"?"🎟 면제권":c==="full"?"💯 만점":c==="done"?(d.by==="t"?"선생님 확인":"완료"):c==="late"?ddText(inst.due):"아직"}</span></span></button>`; }).join("");
   return `<div class="adetail">
     ${t.desc?`<p class="desc" style="margin:0">${esc(t.desc)}</p>`:""}
     <div class="ahead"><div class="actions">${t.type==="weekly"?`<label class="f" for="tdP" style="flex-direction:row;align-items:center;gap:8px">회차<select class="inp" id="tdP" style="width:auto">${ins.map(i=>`<option value="${i.period}" ${i.period===inst.period?"selected":""}>${i.numLbl?`${esc(i.numLbl)} · `:""}${i.label} (마감 ${md(i.due)})</option>`).join("")}</select></label>`:""}
       ${t.numOn?`<label class="f" for="tdNum" style="flex-direction:row;align-items:center;gap:6px">이 회차 번호<input class="inp" id="tdNum" data-id="${t.id}" data-p="${inst.period}" value="${esc(inst.num)}" style="width:80px">${esc(t.numUnit||"")}</label>`:""}
       <span class="muted">마감 ${md(inst.due)} · ${ddText(inst.due)}</span></div>${tdActions(t)}</div>
-    <div class="tally"><span><i class="s-done"></i>완료 <b>${cnt.done}</b></span><span><i class="s-pass"></i>면제권 <b>${cnt.pass}</b></span><span><i class="s-wait"></i>아직 <b>${cnt.wait}</b></span><span><i class="s-sent"></i>마감 지남 <b>${cnt.late}</b></span><span>카드를 누를 때마다 완료 → 면제권 → 안 함으로 바뀌어요.</span><button class="linkbtn" data-act="tdAll" data-id="${t.id}" data-p="${inst.period}">남은 학생 모두 완료로</button></div>
+    <div class="tally"><span><i class="s-done"></i>완료 <b>${cnt.done}</b></span>${isSpell(t)?`<span><i class="s-full"></i>만점 <b>${cnt.full}</b></span>`:""}<span><i class="s-pass"></i>면제권 <b>${cnt.pass}</b></span><span><i class="s-wait"></i>아직 <b>${cnt.wait}</b></span><span><i class="s-sent"></i>마감 지남 <b>${cnt.late}</b></span><span>카드를 누를 때마다 완료 → 면제권 → 안 함으로 바뀌어요.</span><button class="linkbtn" data-act="tdAll" data-id="${t.id}" data-p="${inst.period}">남은 학생 모두 완료로</button></div>
     <div class="grid">${cards}</div></div>`;
 }
 function dailyMatrix(t, ins, asChecker){
@@ -1039,25 +1051,25 @@ function dailyMatrix(t, ins, asChecker){
     const r=recOf(t,i,st.no); const pd=isPend(r); return `<td class="dcell"><button class="cbtn ${CELL_D[c][1]}${pd?" c-pend":""}" data-act="tdToggle" data-id="${t.id}" data-p="${i.period}" data-no="${st.no}" title="${pd?"학생이 표시함 · 눌러서 확인":""}" aria-label="${st.no}번 ${md(i.due)} ${CELL_D[c][0]}${pd?" 확인 필요":""}">${CELL_D[c][0]}${pd?`<i class="pend">!</i>`:""}</button></td>`; }).join("");
     const np=cols.filter(i=>isPend(recOf(t,i,st.no))).length;
     return `<tr><td class="c-no">${st.no}</td><td class="c-nm">${esc(st.name)}${np?` <i class="pend" title="확인할 표시 ${np}개">!</i>`:""}</td>${cells}<td class="dsum">${miss?`<span class="c-late cchip">미작성 ${miss}</span>`:""}${pass?`<span class="c-pass cchip">면제 ${pass}</span>`:""}${!miss&&!pass?`<span class="muted">–</span>`:""}</td></tr>`; }).join("");
-  const foot = cols.map(i=>{ if(isHoliday(i.period)) return `<td class="dcol">휴일</td>`; const ex=list.filter(st=>isAbsent(i.period,st.no)).length; const n=list.filter(st=>["done","pass"].includes(cellOf(t,i,st.no))).length; return `<td class="dcol">${n}/${list.length-ex}</td>`; }).join("");
+  const foot = cols.map(i=>{ if(isHoliday(i.period)) return `<td class="dcol">휴일</td>`; const ex=list.filter(st=>isAbsent(i.period,st.no)).length; const n=list.filter(st=>["done","full","pass"].includes(cellOf(t,i,st.no))).length; return `<td class="dcol">${n}/${list.length-ex}</td>`; }).join("");
   return `<div class="adetail">${t.desc?`<p class="desc" style="margin:0">${esc(t.desc)}</p>`:""}
     <div class="ahead"><div class="legend"><span class="cchip c-done">작성</span><span class="cchip c-pass">면제권</span><span class="cchip c-late">미작성</span><span class="cchip c-wait">아직(오늘)</span><span class="cchip c-holi">휴일</span><span class="cchip c-abs">결석</span>${(()=>{ const n=pendingKeys(r=>r.tid===t.id).length; return n?`<button class="btn warn sm" data-act="confirmTodo" data-id="${t.id}">! ${n}개 한 번에 확인</button>`:""; })()}<span><b>!</b> 표시는 학생이 스스로 체크한 칸이에요. 누르면 확인 완료, 한 번 더 누르면 학생에게 다시 하라고 돌려보내요. 빈칸은 누를 때마다 작성 → 면제권 → 결석 → 안 함. 날짜 아래 "✓ 모두"는 그날을 한 번에 확인·작성 처리해요. 최근 2주가 보여요.</span></div>${asChecker?"":tdActions(t)}</div>${asChecker?"":`<div class="ahead">${checkerCtl(t)}</div>`}
     <div class="tablewrap"><table class="matrix dmatrix"><thead><tr><th class="c-no">번호</th><th class="c-nm">이름</th>${head}<th>합계</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td class="c-no"></td><td class="c-nm">작성</td>${foot}<td></td></tr></tfoot></table></div></div>`;
 }
 const shortName = n => (n||"").length>=3 ? n.slice(1) : (n||"");
 const chunkStudents = list => { if(!list.length) return []; const k=Math.ceil(list.length/11); const per=Math.ceil(list.length/k); const out=[]; for(let i=0;i<list.length;i+=per) out.push(list.slice(i,i+per)); return out; };
-const WSYM = { done:["O","w-done"], pass:["면제","w-pass"], late:["X","w-late"], wait:["","w-wait"], abs:["결석","w-abs"] };
+const WSYM = { done:["O","w-done"], full:["만점","w-full"], pass:["면제","w-pass"], late:["X","w-late"], wait:["","w-wait"], abs:["결석","w-abs"] };
 function weeklyMatrix(t, ins, asChecker){
   const rows = [...ins].reverse(); const list = students(); const curP = (ins.find(i=>i.due>=today0() && dayDiff(i.due,today0())<7)||{}).period;
   const blocks = chunkStudents(list);
   const table = blk => `<div class="tablewrap" style="--tc:${tdColor(t.cat)}"><table class="wmatrix"><thead><tr><th class="wdate">마감 · 회차</th>${blk.map(st=>{ const np=rows.filter(i=>isPend(recOf(t,i,st.no))).length; return `<th class="wst${np?" haspend":""}" ${np?`title="확인할 제출 ${np}개"`:""}><span>${st.no}</span>${esc(shortName(st.name))}${np?`<i class="pend">!</i>`:""}</th>`; }).join("")}</tr></thead><tbody>
-    ${rows.map(i=>{ const n=list.filter(st=>["done","pass"].includes(cellOf(t,i,st.no))).length; const chip = i.numLbl || `${i.round}회`;
+    ${rows.map(i=>{ const n=list.filter(st=>["done","full","pass"].includes(cellOf(t,i,st.no))).length; const chip = i.numLbl || `${i.round}회`;
       const chipEl = !asChecker && ui.numEdit===`${t.id}_${i.period}` ? `<input class="inp numin" id="tdNum" data-id="${t.id}" data-p="${i.period}" value="${esc(i.num??"")}" placeholder="${t.numOn?"번호":"번호 켜기는 수정에서"}" ${t.numOn?"":"disabled"}>`
         : `<${asChecker?"span":"button"} class="rchip" ${asChecker?"":`data-act="numEdit" data-k="${t.id}_${i.period}" title="번호 바꾸기"`}>${esc(chip)}</${asChecker?"span":"button"}>`;
       return `<tr class="${i.period===curP?"cur":""}"><th class="wdate"><span class="wd">${md(i.due)}</span>${chipEl}<small>${n}/${list.length} <button class="allbtn inl" data-act="tdAll" data-id="${t.id}" data-p="${i.period}" title="이 회차 남은 학생 모두 O로">✓ 모두</button></small></th>${blk.map(st=>{ const c=cellOf(t,i,st.no); const d=S.todoDone[doneKey(t.id,i.period,st.no)];
         return `<td><button class="wcell ${WSYM[c][1]}${isPend(d)?" w-pend":""}" data-act="tdToggle" data-id="${t.id}" data-p="${i.period}" data-no="${st.no}" title="${st.no}번 ${esc(st.name)} · ${c==="wait"?"아직":(CELL[c]||WSYM[c])[0]}${d&&d.book?` · 📖 ${esc(d.book)}`:""}${isPend(d)?" · 학생이 냄, 눌러서 확인":""}${d&&d.by==="c"?` · 도우미 ${d.checker}번 체크`:""}" aria-label="${st.no}번 ${esc(st.name)} ${md(i.due)} ${c==="wait"?"아직":(CELL[c]||WSYM[c])[0]}${isPend(d)?" 확인 필요":""}"><span class="wsym">${WSYM[c][0]}${isPend(d)?`<i class="pend">!</i>`:""}</span>${d&&d.book&&dState(d)?`<span class="wbook">${esc(d.book)}</span>`:""}</button></td>`; }).join("")}</tr>`; }).join("")}
     </tbody></table></div>`;
-  return `<div class="legend"><span class="cchip c-done">O 제출</span><span class="cchip c-late">X 못 냄·늦음</span><span class="cchip c-pass">면제권</span><span class="cchip c-abs">결석</span><span class="cchip c-late"><i class="pend" style="margin:0 3px 0 0">!</i>학생이 냄 · 확인 전</span>${(()=>{ const n=pendingKeys(r=>r.tid===t.id).length; return n?`<button class="btn warn sm" data-act="confirmTodo" data-id="${t.id}">! ${n}개 한 번에 확인</button>`:""; })()}<span><b>!</b> 칸을 누르면 확인 완료, 한 번 더 누르면 학생에게 다시 하라고 돌려보내요. 빈칸은 누를 때마다 O → 면제 → 결석 → 빈칸. 마감일에 결석한 학생은 ‘결석’으로 보이고, 나중에 내면 그대로 확인할 수 있어요. "✓ 모두"는 그 회차를 한 번에 확인·O 처리해요.${asChecker?"":" 회차 딱지를 누르면 번호를 바꿀 수 있어요."}</span></div>${blocks.map(table).join("")}`;
+  return `<div class="legend"><span class="cchip c-done">O 제출</span>${isSpell(t)?`<span class="cchip c-full">💯 만점</span>`:""}<span class="cchip c-late">X 못 냄·늦음</span><span class="cchip c-pass">면제권</span><span class="cchip c-abs">결석</span><span class="cchip c-late"><i class="pend" style="margin:0 3px 0 0">!</i>학생이 냄 · 확인 전</span>${(()=>{ const n=pendingKeys(r=>r.tid===t.id).length; return n?`<button class="btn warn sm" data-act="confirmTodo" data-id="${t.id}">! ${n}개 한 번에 확인</button>`:""; })()}<span><b>!</b> 칸을 누르면 확인 완료, 한 번 더 누르면 학생에게 다시 하라고 돌려보내요. 빈칸은 누를 때마다 O → ${isSpell(t)?"만점 → ":""}면제 → 결석 → 빈칸. 마감일에 결석한 학생은 ‘결석’으로 보이고, 나중에 내면 그대로 확인할 수 있어요. "✓ 모두"는 그 회차를 한 번에 확인·O 처리해요.${asChecker?"":" 회차 딱지를 누르면 번호를 바꿀 수 있어요."}</span></div>${blocks.map(table).join("")}`;
 }
 const ckActive = c => c && c.no && (!c.until || parseD(c.until) >= today0());
 const activeCheckers = t => [...(t.checkers||[]), ...(t.checker?[t.checker]:[])].filter(ckActive).filter((c,i,a)=>a.findIndex(x=>x.no===c.no)===i);
@@ -1473,15 +1485,17 @@ document.addEventListener("click", async ev => {
     case "tdDoneBook": { const book=($("#bookIn")?.value||"").trim(); if(!book){ toast("이번에 읽은 책 이름을 써 주세요."); $("#bookIn")?.focus(); break; } ui.confirm=null; ui.bookDraft="";
       if(await put("todoDone",doneKey(id,t.dataset.p,+ui.me),{tid:id,period:t.dataset.p,no:+ui.me,by:"s",kind:"done",book,at:new Date().toISOString()})) toast(`📖 ‘${book}’ 독서록을 냈어요!`); else renderMain(); break; }
     case "tdDone": { if(await put("todoDone",doneKey(id,t.dataset.p,+ui.me),{tid:id,period:t.dataset.p,no:+ui.me,by:"s",kind:"done",at:new Date().toISOString()})) toast(S.todos[id]&&isExam(S.todos[id])?"준비 완료! 시험 잘 봐요 💪":"잘했어요! 완료한 일로 옮겼어요."); break; }
+    case "tdFull": { if(await put("todoDone",doneKey(id,t.dataset.p,+ui.me),{tid:id,period:t.dataset.p,no:+ui.me,by:"s",kind:"full",at:new Date().toISOString()})) toast("💯 만점! 정말 잘했어요!"); break; }
     case "tdUndo": { if(await del("todoDone",t.dataset.k)) toast("해야 할 일로 되돌렸어요."); break; }
     case "tdToggle": { const k=doneKey(id,t.dataset.p,no); const cur=dState(S.todoDone[k]); const base={tid:id,period:t.dataset.p,no,by: ui.role==="teacher"?"t":"c", ...(ui.role==="teacher"?{}:{checker:+ui.me}), at:new Date().toISOString()};
       if(ui.role!=="teacher"){ const td=S.todos[id]; if(!td || !isChecker(td,+ui.me)){ toast("검사 권한이 없어요."); break; } }
       const rec=S.todoDone[k]; const tdT=S.todos[id];
       if(tdT && tdT.type!=="once"){ const inst=instancesOf(tdT,60).find(x=>x.period===t.dataset.p); if(inst && cellOf(tdT,inst,no)==="abs"){ const ad=absDateOf(tdT,t.dataset.p); if(ad && await setAbsence(ad,no,false)) toast(`${no}번 결석을 풀었어요.`); break; } }
       if(!cur) await put("todoDone",k,{...base,kind:"done"});
-      else if(rec.by==="s"){ await put("todoDone",k,{...rec,...base,kind:rec.kind,orig:"s",submittedAt:rec.at}); toast(`${no}번 ${cur==="pass"?"면제권":"제출"}을 확인했어요.${rec.book?` 📖 ${rec.book}`:""}`); }
+      else if(rec.by==="s"){ await put("todoDone",k,{...rec,...base,kind:rec.kind,orig:"s",submittedAt:rec.at}); toast(`${no}번 ${cur==="pass"?"면제권":cur==="full"?"만점":"제출"}을 확인했어요.${rec.book?` 📖 ${rec.book}`:""}`); }
       else if(rec.orig==="s"){ await put("todoDone",k,{...base,kind:"redo",book:rec.book||""}); toast(`${no}번 학생 화면에 다시 할 일로 보냈어요.`); }
-      else if(cur==="done"){ const td=S.todos[id]; const pb = td && PASS_CATS.includes(td.cat) ? passBlocked(td,t.dataset.p,no) : "면제권을 쓸 수 없는 할 일이에요."; if(pb && ui.role!=="teacher"){ await del("todoDone",k); toast(pb); } else { await put("todoDone",k,{...base,kind:"pass"}); if(pb) toast(`선생님 권한으로 면제 처리했어요. (${pb})`); } }
+      else if(cur==="done" && isSpell(tdT)) await put("todoDone",k,{...base,kind:"full"});
+      else if(cur==="done"||cur==="full"){ const td=S.todos[id]; const pb = td && PASS_CATS.includes(td.cat) ? passBlocked(td,t.dataset.p,no) : "면제권을 쓸 수 없는 할 일이에요."; if(pb && ui.role!=="teacher"){ await del("todoDone",k); toast(pb); } else { await put("todoDone",k,{...base,kind:"pass"}); if(pb) toast(`선생님 권한으로 면제 처리했어요. (${pb})`); } }
       else { await del("todoDone",k); if(tdT && tdT.type!=="once"){ const ad=absDateOf(tdT,t.dataset.p); if(ad && await setAbsence(ad,no,true)) toast(`${no}번 ${lkDate(ad)} 결석으로 바꿨어요.`); } } break; }
     case "doneGrp": { ui.doneOpen = ui.doneOpen||{}; const c=t.dataset.c; ui.doneOpen[c]=!ui.doneOpen[c]; renderMain(); break; }
     case "numEdit": ui.numEdit = ui.numEdit===t.dataset.k ? null : t.dataset.k; renderMain(); setTimeout(()=>$("#tdNum")?.focus(),0); break;
