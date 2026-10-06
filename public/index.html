@@ -493,10 +493,11 @@ span.rchip{cursor:default}
 .lkcard{position:relative;border:none;border-radius:12px;background:var(--st-wait);color:var(--st-wait-ink);min-height:84px;padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;transition:transform .12s, box-shadow .12s}
 .lkcard.lk-link{background:var(--lk-link);color:var(--lk-link-ink);box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--tc-2) 35%, transparent)}
 .lkcard.lk-link .lkname{color:var(--ink)}
-.lkcard.lk-note{background:var(--lk-note);color:var(--lk-note-ink)}
-:root{--lk-link:color-mix(in srgb, var(--tc-2) 20%, var(--surface));--lk-link-ink:#1C6E47;--lk-note:#FFEB6B;--lk-note-ink:#5C4A00}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lk-link-ink:#86D9AC;--lk-note:#E8CF4A;--lk-note-ink:#2A2200}}
-:root[data-theme="dark"]{--lk-link-ink:#86D9AC;--lk-note:#E8CF4A;--lk-note-ink:#2A2200}
+.lkcard.lk-note{background:var(--lk-note);color:var(--lk-note-ink);box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--tc-1) 35%, transparent)}
+.lkcard.lk-note .lkname{color:var(--ink)}
+:root{--lk-link:color-mix(in srgb, var(--tc-2) 20%, var(--surface));--lk-link-ink:#1C6E47;--lk-note:color-mix(in srgb, var(--tc-1) 20%, var(--surface));--lk-note-ink:#A4501A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lk-link-ink:#86D9AC;--lk-note-ink:#F2A06A}}
+:root[data-theme="dark"]{--lk-link-ink:#86D9AC;--lk-note-ink:#F2A06A}
 .lkcard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .lkdate{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;letter-spacing:.2px}
 .lkname{font-size:14px;font-weight:500;opacity:.9;word-break:keep-all;line-height:1.35}
@@ -518,23 +519,45 @@ span.ovb{cursor:default}
 .pk:disabled{opacity:.55;cursor:not-allowed}
 .w-abs{color:var(--ink);background:color-mix(in srgb, var(--muted) 16%, var(--surface));font-family:var(--f-body);font-size:12px;font-weight:700}
 .dd-abs{background:color-mix(in srgb, var(--muted) 16%, var(--surface));color:var(--ink);font-family:var(--f-body);font-size:13px;font-weight:700}
-.tkadd{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tkadd #tkD{width:auto;flex:0 0 auto}.tkadd #tkT{flex:1 1 220px;min-width:0}
-.tkwrap{overflow:auto;max-height:72vh;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tkadd{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.tkadd #tkD{width:auto;flex:0 0 auto}.tkadd #tkT{flex:1 1 220px;min-width:0}
+.tkwrap{overflow-x:auto;overflow-y:visible;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .tktbl{border-collapse:separate;border-spacing:0;font-size:14px}
 .tktbl th,.tktbl td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:0;background:var(--surface)}
-.tktbl thead th{position:sticky;top:0;z-index:2;background:var(--bg)}
-.tktbl .tks{position:sticky;left:0;z-index:1;text-align:left;padding:6px 12px;white-space:nowrap;font-weight:500;min-width:96px}
+.tktbl thead th{background:var(--bg)}
+.tktbl .tks{position:sticky;left:0;z-index:1;text-align:left;padding:2px 12px;font-size:13px;white-space:nowrap;font-weight:500;min-width:96px}
 .tktbl .tks b{display:inline-block;min-width:20px;color:var(--muted)}
 .tktbl thead .tkcorner{z-index:3;background:var(--bg);font-size:12px;color:var(--muted)}
 .tktbl .tkpad{border-right:0;width:100%}
-.tkhb{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px;width:84px;box-sizing:border-box;text-align:center}
+.tkhb{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 4px;width:84px;box-sizing:border-box;text-align:center}
 .tkhb:hover{background:var(--accent-soft)}.tkhb:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .tkd{font-size:11px;color:var(--muted)}.tkt{font-weight:700;font-size:13px;line-height:1.3;word-break:keep-all;overflow-wrap:anywhere}
 .tkn{font-size:11px;color:var(--muted);font-weight:600}.tkn.tkfull{color:var(--st-done)}
 .tkclosed .tkhb{opacity:.55}
-.tkc{all:unset;cursor:pointer;display:grid;place-items:center;width:84px;height:34px;font-weight:800;font-size:17px;color:var(--st-done-ink);box-sizing:border-box}
+.tkc{all:unset;cursor:pointer;display:grid;place-items:center;width:84px;height:27px;font-weight:800;font-size:15px;color:var(--st-done-ink);box-sizing:border-box}
 .tkc:hover{background:var(--accent-soft)}.tkc.on{background:var(--st-done)}.tkc:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .tktbl tbody tr:hover .tks{background:var(--accent-soft)}
+@media (max-width:640px){.tdrow .tdbtns{grid-column:2/-1;justify-self:stretch;justify-content:flex-start}.tdrow .tdblk{grid-row:1/span 2}.tdrow .bookin{flex:1 1 140px;min-width:0}}
+.foldhead{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box;border-radius:10px}
+.ahead > .foldhead{width:auto;flex:1 1 auto}
+.foldhead:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.foldtg{flex:none;font-size:12px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--surface)}
+.foldhead:hover .foldtg{border-color:var(--accent);color:var(--accent)}
+.latepanel .foldhead + .tdlist{margin-top:14px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.calh{background:var(--bg);text-align:center;font-size:12px;font-weight:700;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--line)}
+.calh.sun,.calc.sun .calday b{color:var(--st-sent)} .calh.sat,.calc.sat .calday b{color:var(--accent)}
+.calc{min-height:92px;padding:4px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:3px;min-width:0}
+.calc:nth-child(7n){border-right:0}
+.calc.out{background:color-mix(in srgb, var(--bg) 60%, transparent)}
+.calc.today{background:var(--accent-soft)}
+.calc.today .calday b{background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:0 6px}
+.calday{display:flex;align-items:center;gap:4px;font-size:12px;padding:1px 2px}
+.calholi{font-size:10px;color:var(--st-sent);font-weight:700}
+.calchip{display:block;font-size:11px;line-height:1.35;padding:2px 5px;border-radius:5px;border-left:3px solid var(--tc);background:color-mix(in srgb, var(--tc) 18%, var(--surface));color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.legend .calchip{display:inline-block}
+.calchip.done{border-left-color:var(--st-none-ink);background:var(--st-none);color:var(--st-none-ink);font-weight:500}
+.calchip.late{box-shadow:inset 0 0 0 1.5px var(--st-sent)}
+@media (max-width:640px){.calc{min-height:64px;padding:2px}.calchip{font-size:0;padding:0;height:6px;border-left-width:0;background:var(--tc)}.calchip.done{background:var(--st-none-ink)}.legend .calchip{font-size:11px;height:auto;padding:2px 5px;border-left-width:3px;background:color-mix(in srgb, var(--tc) 18%, var(--surface))}}
 .dmcard{background:var(--st-done-soft);color:var(--st-done);border:1.5px solid color-mix(in srgb, var(--st-done) 45%, var(--surface))}
 .dmcard .lkname{color:var(--ink)}
 .dmto{font-size:12px;font-weight:700;opacity:.9}
@@ -653,7 +676,7 @@ function renderMain(){
   if(!loaded){ m.innerHTML=`<div class="panel empty"><h3>불러오는 중…</h3></div>`; return; }
   if(ui.role==="student" && !S.students[ui.me]) { m.innerHTML = pickView(); return; }
   if((ui.tab==="students"||ui.tab==="records"||ui.tab==="tchk") && ui.role!=="teacher") ui.tab="hw";
-  if(ui.tab==="tchk") { m.innerHTML = tchkView(); return; }
+  if(ui.tab==="tchk") { const w=$(".tkwrap"), sl=w?w.scrollLeft:0, sy=window.scrollY; m.innerHTML = tchkView(); const w2=$(".tkwrap"); if(w2) w2.scrollLeft=sl; window.scrollTo(0,sy); return; }
   if(ui.tab==="records") { m.innerHTML = recordsView(); return; }
   if(ui.tab==="students") { m.innerHTML = studentsView(); return; }
   if(ui.tab==="todo") { m.innerHTML = todoView(); return; }
@@ -940,19 +963,19 @@ function todoStudent(){
       : ui.confirm===`pass_${k}` ? `<span class="tdbtns${isBook(t)?" bookask":""}">${isBook(t)?`<input class="inp bookin" id="bookIn" maxlength="40" placeholder="이번 책 이름" aria-label="책 이름" value="${esc(ui.bookDraft||"")}">`:""}<span class="muted">면제권을 쓸까요?</span><button class="btn pass sm" data-act="tdPass" data-id="${t.id}" data-p="${inst.period}">쓰기</button><button class="btn ghost sm" data-act="cancelConfirm">취소</button></span>`
       : `<span class="tdbtns"><button class="btn ok-o sm" ${isBook(t)?`data-act="tdAskBook" data-k="${k}"`:`data-act="tdDone"`} data-id="${t.id}" data-p="${inst.period}">${isExam(t)?"💪 준비 완료!":"✓ 다 했어요"}</button>${isSpell(t)?`<button class="btn full-o sm" data-act="tdFull" data-id="${t.id}" data-p="${inst.period}">💯 만점</button>`:""}${canPass?(pb?`<button class="btn pass-o sm" disabled title="${esc(pb)}">🎟 연속 사용 불가</button>`:`<button class="btn pass-o sm" data-act="tdAskPass" data-k="${k}">🎟 면제권</button>`):""}</span>`;
     return `<div class="tdrow${d?" isdone":""}" style="--tc:${tdColor(t.cat)}"><span class="tdblk"></span>
-    <div class="tdmain"><div class="tdcat">${esc(t.cat)}${rec&&rec.kind==="redo"?` <span class="redotag">↩ ${rec.by==="c"?"도우미":"선생님"} 확인: 다시 해 주세요</span>`:isNew(t)&&!d?` <span class="newtag">NEW</span>`:""}</div><b>${tdTitle(t,inst)}</b><span class="muted">${t.type==="once"?"":t.type==="daily"?"매일 · ":`${inst.label} · `}${t.type==="daily"?`${md(inst.due)} 하루`:`마감 ${md(inst.due)}`}${t.desc?` · ${esc(t.desc)}`:""}</span></div>
+    <div class="tdmain"><div class="tdcat">${esc(t.cat)}${rec&&rec.kind==="redo"?` <span class="redotag">↩ ${rec.by==="c"?"도우미":"선생님"} 확인: 다시 해 주세요</span>`:newFor(t,"todo")&&!d?` <span class="newtag">NEW</span>`:""}</div><b>${tdTitle(t,inst)}</b><span class="muted">${t.type==="once"?"":t.type==="daily"?"매일 · ":`${inst.label} · `}${t.type==="daily"?`${md(inst.due)} 하루`:`마감 ${md(inst.due)}`}${t.desc?` · ${esc(t.desc)}`:""}</span></div>
     ${!d && t.type==="weekly" && isAbsent(ymd(inst.due),me) ? `<span class="dd dd-abs" title="마감일에 결석했어요. 지금 내도 돼요.">결석 · 지금 내도 돼요</span>` : ddBadge(inst.due, st)}${btns}</div>`; };
   const myChecks = todoList().filter(t=> t.type!=="once" && isChecker(t,me));
   const ckHtml = myChecks.map(t=>{ const ins=instancesOf(t); return `<section class="panel ckpanel" style="--tc:${tdColor(t.cat)}"><div class="ahead"><button class="btn sm" data-act="openAbs" style="order:2">🤒 결석 처리</button><div><h2>🔍 검사 도우미 · ${esc(t.title)}</h2><p class="muted" style="margin:4px 0 0">선생님이 ${isChecker(t,me).until?`${md(parseD(isChecker(t,me).until))}까지 `:""}확인을 맡겼어요.${activeCheckers(t).length>1?` 함께 맡은 친구: ${activeCheckers(t).filter(c=>c.no!==me).map(c=>`${c.no}번 ${esc(S.students[c.no]?.name||"")}`).join(", ")}`:""} 친구들 공책을 보고 칸을 눌러 체크해 주세요.</p></div></div>${t.type==="daily"?dailyMatrix(t,ins,true):weeklyMatrix(t,ins,true)}</section>`; }).join("");
-  const lateHtml = overdue.length ? `<section class="panel latepanel"><div class="ahead"><div><h2>⏰ 밀린 일 <span class="latecount">${overdue.length}</span></h2><p class="muted" style="margin:4px 0 0">기한이 지났어요. 얼른 해서 체크해 주세요!</p></div></div><div class="tdlist">${overdue.map(row).join("")}</div></section>`
+  const lateHtml = overdue.length ? `<section class="panel latepanel"><button class="foldhead" data-act="fold" data-v="late" aria-expanded="${!folded("late")}"><div><h2>⏰ 밀린 일 <span class="latecount">${overdue.length}</span></h2><p class="muted" style="margin:4px 0 0">기한이 지났어요. 얼른 해서 체크해 주세요!</p></div><span class="foldtg">${folded("late")?"펼치기 ▾":"접기 ▴"}</span></button>${folded("late")?"":`<div class="tdlist">${overdue.map(row).join("")}</div>`}</section>`
     : `<section class="panel latepanel ok"><h2>⏰ 밀린 일</h2><p class="lateok">밀린 것이 없어요! 🎉</p></section>`;
   const dms = myDms(me); const dmTodo = dms.filter(m=>!dmDoneOf(m.id,me)), dmDone = dms.filter(m=>dmDoneOf(m.id,me));
-  const dmRow = m => { const d=dmDoneOf(m.id,me); return `<div class="tdrow dmrow${d?" isdone":""}" style="--tc:var(--st-done)"><span class="tdblk"></span><div class="tdmain"><div class="tdcat">💌 선생님 개별 알림${isNew(m)&&!d?` <span class="newtag">NEW</span>`:""}</div><b>${esc(m.title)}</b><span class="muted">${lkDate(m.date)}${m.note?` · ${esc(m.note)}`:""}</span></div>${d?`<span class="dd dd-ok">했어요</span>${d.by==="t"?`<span class="muted tdby">선생님 확인 ✓</span>`:`<button class="btn ghost sm" data-act="dmUndo" data-id="${m.id}">되돌리기</button>`}`:`<span></span><span class="tdbtns"><button class="btn ok-o sm" data-act="dmDo" data-id="${m.id}">✓ 했어요</button></span>`}</div>`; };
+  const dmRow = m => { const d=dmDoneOf(m.id,me); return `<div class="tdrow dmrow${d?" isdone":""}" style="--tc:var(--st-done)"><span class="tdblk"></span><div class="tdmain"><div class="tdcat">💌 선생님 개별 알림${newFor(m,"todo")&&!d?` <span class="newtag">NEW</span>`:""}</div><b>${esc(m.title)}</b><span class="muted">${lkDate(m.date)}${m.note?` · ${esc(m.note)}`:""}</span></div>${d?`<span class="dd dd-ok">했어요</span>${d.by==="t"?`<span class="muted tdby">선생님 확인 ✓</span>`:`<button class="btn ghost sm" data-act="dmUndo" data-id="${m.id}">되돌리기</button>`}`:`<span></span><span class="tdbtns"><button class="btn ok-o sm" data-act="dmDo" data-id="${m.id}">✓ 했어요</button></span>`}</div>`; };
   const nTodo = todo.length + dmTodo.length;
-  return `<div class="list">${ckHtml}${lateHtml}<section class="panel"><div class="ahead"><div><h2>해야 할 일</h2><p class="muted" style="margin:4px 0 0">${nTodo?`${nTodo}개 남았어요`:"지금 할 일을 모두 끝냈어요! 👏"}${passUsed?` · 면제권 ${passUsed}번 사용`:""}</p></div>${tdLegend()}</div>
-    <div class="tdlist">${dmTodo.map(dmRow).join("")}${todo.map(row).join("") || (dmTodo.length?"":`<div class="empty" style="padding:20px"><h3>남은 할 일이 없어요</h3></div>`)}</div></section>
+  return `<div class="list">${ckHtml}${lateHtml}<section class="panel"><div class="ahead"><button class="foldhead" data-act="fold" data-v="todo" aria-expanded="${!folded("todo")}"><div><h2>해야 할 일</h2><p class="muted" style="margin:4px 0 0">${nTodo?`${nTodo}개 남았어요`:"지금 할 일을 모두 끝냈어요! 👏"}${passUsed?` · 면제권 ${passUsed}번 사용`:""}</p></div><span class="foldtg">${folded("todo")?"펼치기 ▾":"접기 ▴"}</span></button>${folded("todo")?"":tdLegend()}</div>
+    ${folded("todo")?"":`<div class="tdlist">${dmTodo.map(dmRow).join("")}${todo.map(row).join("") || (dmTodo.length?"":`<div class="empty" style="padding:20px"><h3>남은 할 일이 없어요</h3></div>`)}</div>`}</section>
     ${dmDone.length?`<section class="panel"><h2>💌 한 개별 알림 <span class="muted">${dmDone.length}</span></h2><div class="tdlist">${dmDone.slice(0,20).map(dmRow).join("")}</div></section>`:""}
-    ${doneSection(me, done)}</div>`;
+    ${doneSection(me, done)}${calView(me)}</div>`;
 }
 const tdLegend = () => `<div class="legend">${TD_CATS.map(c=>`<span class="tdlg" style="--tc:${tdColor(c)}">${c}</span>`).join("")}</div>`;
 /* 교사 · 이번 주 한눈에 보기 (오늘하루 · 독서록 · 주제글쓰기) */
@@ -1091,7 +1114,15 @@ function newCounts(no){
   return {links,todo};
 }
 const seenBusy = {};
-async function markSeen(no,key){ if(seenBusy[key]) return; seenBusy[key]=true; const id=String(no); const cur=(S.seen||{})[id];
+/* NEW 표시: 확인하면 사라져요 */
+let tSeenSet = new Set(); try{ tSeenSet = new Set(JSON.parse(localStorage.getItem("tSeen")||"[]")); }catch(e){}
+function markTSeen(id){ if(tSeenSet.has(id)) return; tSeenSet.add(id); try{ localStorage.setItem("tSeen", JSON.stringify([...tSeenSet].slice(-300))); }catch(e){} }
+function newFor(x,key){ if(!isNew(x)) return false;
+  if(ui.role==="teacher") return !tSeenSet.has(x.id);
+  const no=+ui.me; if(key==="links") return !(S.seen||{})[String(no)]?.open?.[x.id];
+  const since = (ui.prevSeen&&ui.prevSeen[key]!==undefined) ? ui.prevSeen[key] : seenAt(no,key);
+  return new Date(x.createdAt).getTime() > since; }
+async function markSeen(no,key){ if(seenBusy[key]) return; seenBusy[key]=true; ui.prevSeen=ui.prevSeen||{}; if(ui.prevSeen[key]===undefined) ui.prevSeen[key]=seenAt(no,key); const id=String(no); const cur=(S.seen||{})[id];
   const at=new Date().toISOString(); let ok=false; try{ ok = cur ? await patch("seen",id,{[key]:at}) : await put("seen",id,{no,[key]:at}); } finally { seenBusy[key]=!ok; } }
 /* 링크함/알림장 */
 const lkDate = s => { const d=parseD(s); return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}. (${WDN[d.getDay()]})`; };
@@ -1101,7 +1132,7 @@ function linksView(){
   const T = ui.role==="teacher"; const list = linkList();
   const head = `<div class="ahead"><div><h2>링크함/알림장</h2><p class="muted" style="margin:4px 0 0">${T?"올린 글과 링크는 학생 화면에 바로 나타나요. 링크 없이 알림장 글만 올려도 돼요.":"선생님이 올린 알림장과 수업 링크예요. 눌러서 확인해 보세요."}</p></div>${T?`<button class="btn primary" data-act="newLink">＋ 글·링크 올리기</button>`:""}</div>`;
   if(!list.length) return `<section class="panel">${head}<div class="empty"><h3>아직 올라온 글이 없어요</h3><p>${T?"알림장이나 수업에 쓸 링크를 올리면 학생들에게 카드로 보여요.":"선생님이 글을 올리면 여기에 나타나요."}</p>${T?`<button class="btn primary" data-act="newLink">첫 글 올리기</button>`:""}</div></section>`;
-  return `<section class="panel">${head}<div class="lkgrid">${list.map(l=>`<button class="lkcard ${(l.items||[]).length?"lk-link":"lk-note"}" data-act="openLink" data-id="${l.id}">${isNew(l)?`<span class="newtag lknew">NEW</span>`:""}<span class="lkdate">${lkDate(l.date)}</span><span class="lkname">${esc(l.title)}</span>${(l.items||[]).length>1?`<span class="lkcount">링크 ${(l.items||[]).length}개</span>`:!(l.items||[]).length?`<span class="lkcount">📝 알림장</span>`:""}</button>`).join("")}</div></section>`;
+  return `<section class="panel">${head}<div class="lkgrid">${list.map(l=>`<button class="lkcard ${(l.items||[]).length?"lk-link":"lk-note"}" data-act="openLink" data-id="${l.id}">${newFor(l,"links")?`<span class="newtag lknew">NEW</span>`:""}<span class="lkdate">${lkDate(l.date)}</span><span class="lkname">${esc(l.title)}</span>${(l.items||[]).length>1?`<span class="lkcount">링크 ${(l.items||[]).length}개</span>`:!(l.items||[]).length?`<span class="lkcount">📝 알림장</span>`:""}</button>`).join("")}</div></section>`;
 }
 /* 개별 알림 */
 const dmList = () => Object.values(S.dms||{}).sort((a,b)=>(b.date||"").localeCompare(a.date||"") || (b.createdAt||"").localeCompare(a.createdAt||""));
@@ -1110,7 +1141,7 @@ const myDms = me => dmList().filter(m=>(m.to||[]).map(Number).includes(me));
 function dmView(){
   const list = dmList();
   const cards = list.map(m=>{ const to=(m.to||[]).map(Number); const n=to.filter(no=>dmDoneOf(m.id,no)).length;
-    return `<button class="lkcard dmcard" data-act="openDm" data-id="${m.id}">${isNew(m)?`<span class="newtag lknew">NEW</span>`:""}<span class="lkdate">${lkDate(m.date)}</span><span class="lkname">${esc(m.title)}</span><span class="dmto">${to.length===1?`${to[0]}번 ${esc(S.students[to[0]]?.name||"")}`:`${to.length}명`} · 완료 ${n}/${to.length}</span></button>`; }).join("");
+    return `<button class="lkcard dmcard" data-act="openDm" data-id="${m.id}">${newFor(m,"dm")?`<span class="newtag lknew">NEW</span>`:""}<span class="lkdate">${lkDate(m.date)}</span><span class="lkname">${esc(m.title)}</span><span class="dmto">${to.length===1?`${to[0]}번 ${esc(S.students[to[0]]?.name||"")}`:`${to.length}명`} · 완료 ${n}/${to.length}</span></button>`; }).join("");
   return `<section class="panel"><div class="ahead"><div><h2>ToDoList · 개별 알림</h2><p class="muted" style="margin:4px 0 0">골라서 보낸 알림은 그 학생의 ‘해야 할 일’에 떠요. 학생이 했다고 표시하면 여기서 확인할 수 있어요.</p></div><button class="btn primary" data-act="newDm">＋ 개별 알림 보내기</button></div>${tdViewBar()}
     ${list.length?`<div class="lkgrid">${cards}</div>`:`<div class="empty"><h3>아직 보낸 개별 알림이 없어요</h3><p>예: “받아쓰기 다시 보기”, “상담 신청서 내기”처럼 몇 명에게만 보낼 일을 보내 보세요.</p><button class="btn primary" data-act="newDm">첫 알림 보내기</button></div>`}</section>`;
 }
@@ -1129,6 +1160,38 @@ function tchkView(){
       `<div class="tkwrap"><table class="tktbl"><thead><tr><th class="tks tkcorner">번호 · 이름</th>${head}<th class="tkpad"></th></tr></thead><tbody>${rows}</tbody></table></div>
       ${cols.length?"":`<p class="muted" style="text-align:center;margin:14px 0 0">위 칸에 확인할 일을 적고 ＋ 추가를 누르면 세로줄이 생겨요.</p>`}`}
   </section></div>`;
+}
+/* 접기 / 펼치기 (이 기기에서만 기억) */
+let foldState = {}; try{ foldState = JSON.parse(localStorage.getItem("fold")||"{}")||{}; }catch(e){}
+const folded = k => !!foldState[k];
+/* 학생 달력 (한 달) */
+function calInstances(t, a, b){
+  const out=[]; const start=parseD(t.start || (t.createdAt||"").slice(0,10) || ymd(today0())); const end=t.endedAt?parseD(t.endedAt):null;
+  if(t.type==="once"){ if(t.due){ const d=parseD(t.due); if(d>=a && d<=b) out.push({period:"once",due:d}); } return out; }
+  if(t.type==="daily"){ for(let d=new Date(Math.max(a,start)); d<=b && (!end||d<=end); d=addDays(d,1)){ const w=d.getDay(); if(!t.weekends&&(w===0||w===6)) continue; out.push({period:ymd(d),due:new Date(d)}); } return out; }
+  const off=((t.weekday??5)+6)%7; let firstW=mondayOf(start); if(addDays(firstW,off)<start) firstW=addDays(firstW,7);
+  const lastW = end ? mondayOf(end) : null;
+  for(let w=new Date(Math.max(firstW, addDays(mondayOf(a),0))); w<=b; w=addDays(w,7)){ if(lastW && w>lastW) break; if(w<firstW) continue; const due=addDays(w,off); if(due<a||due>b) continue;
+    const idx=Math.round(dayDiff(w,firstW)/7); const num = t.numOn ? String((t.nums||{})[ymd(w)] ?? ((+t.numStart||1)+idx)) : null;
+    out.push({period:ymd(w),due,num:num!==null?`${num}${t.numUnit||""}`:""}); }
+  return out;
+}
+function calView(me){
+  const base = ui.calMonth ? parseD(ui.calMonth) : new Date(today0().getFullYear(), today0().getMonth(), 1);
+  const y=base.getFullYear(), mo=base.getMonth(); const first=new Date(y,mo,1), last=new Date(y,mo+1,0);
+  const byDay={}; const add=(d,x)=>{ (byDay[ymd(d)] = byDay[ymd(d)]||[]).push(x); };
+  todoList().forEach(t=>calInstances(t,first,last).forEach(i=>{ if(excused(t,i.period,me)) return; const rec=S.todoDone[doneKey(t.id,i.period,me)]; const st=dState(rec);
+    const short = t.type==="daily" ? t.cat.replace(/ 작성$/,"") : (i.num ? `${t.title} ${i.num}` : t.title);
+    add(i.due,{color:tdColor(t.cat), txt:short, done:!!st, late:!st && i.due<today0() && !(isExam(t)), sub:st==="pass"?"면제":st==="full"?"만점":"" }); }));
+  myDms(me).forEach(m=>{ if(!m.date) return; const d=parseD(m.date); if(d<first||d>last) return; add(d,{color:"var(--st-done)", txt:"💌 "+m.title, done:!!dmDoneOf(m.id,me), late:false, sub:""}); });
+  const lead=first.getDay(); const cells=[]; for(let i=0;i<lead;i++) cells.push(`<div class="calc out"></div>`);
+  for(let d=1; d<=last.getDate(); d++){ const dt=new Date(y,mo,d); const key=ymd(dt); const items=byDay[key]||[]; const isT=+dt===+today0(); const w=dt.getDay();
+    cells.push(`<div class="calc${isT?" today":""}${w===0?" sun":w===6?" sat":""}"><div class="calday"><b>${d}</b>${isHoliday(key)?`<span class="calholi">휴일</span>`:""}</div>${items.map(x=>`<span class="calchip${x.done?" done":""}${x.late?" late":""}" style="--tc:${x.color}" title="${esc(x.txt)}${x.done?" · 완료":x.late?" · 밀림":""}">${x.done?"✓ ":""}${esc(x.txt)}${x.sub?` · ${x.sub}`:""}</span>`).join("")}</div>`); }
+  while(cells.length%7) cells.push(`<div class="calc out"></div>`);
+  return `<section class="panel"><div class="ahead"><div><h2>📅 ${y}년 ${mo+1}월 달력</h2><p class="muted" style="margin:4px 0 0">마감일에 색깔 딱지가 붙어요. 끝낸 일은 회색이에요.</p></div>
+    <div class="actions"><button class="btn ghost sm" data-act="calNav" data-d="-1" aria-label="지난달">◀</button><button class="btn ghost sm" data-act="calNav" data-d="0">이번 달</button><button class="btn ghost sm" data-act="calNav" data-d="1" aria-label="다음달">▶</button></div></div>
+    <div class="cal">${WDN.map((n,i)=>`<div class="calh${i===0?" sun":i===6?" sat":""}">${n}</div>`).join("")}${cells.join("")}</div>
+    <div class="legend" style="margin-top:10px">${TD_CATS.map(c=>`<span class="calchip" style="--tc:${tdColor(c)}">${esc(c)}</span>`).join("")}<span class="calchip" style="--tc:var(--st-done)">💌 개별 알림</span><span class="calchip done">✓ 끝낸 일</span><span class="calchip late" style="--tc:var(--muted)">밀린 일</span></div></section>`;
 }
 /* 생각모으기 */
 const normW = w => String(w||"").trim().replace(/\s+/g," ").replace(/[.,!?~·…"'“”‘’]+$/g,"");
@@ -1516,7 +1579,9 @@ document.addEventListener("click", async ev => {
     case "delTchk": ui.confirm=null; closeSheet(); if(await del("tchk",id)) toast("항목을 지웠어요."); break;
     case "newDm": ui.confirm=null; ui.dmSel=null; ui.dmDate=null; ui.dmTitle=null; ui.dmNote=null; openSheet({type:"dmform"}); setTimeout(()=>$("#dmT")?.focus(),30); break;
     case "editDm": ui.confirm=null; ui.dmSel=null; ui.dmDate=null; ui.dmTitle=null; ui.dmNote=null; openSheet({type:"dmform",id}); break;
-    case "openDm": openSheet({type:"dmview",id}); break;
+    case "fold": { const k=t.dataset.v; foldState[k]=!foldState[k]; try{ localStorage.setItem("fold", JSON.stringify(foldState)); }catch(e){} renderMain(); break; }
+    case "calNav": { const d=+t.dataset.d; if(!d) ui.calMonth=null; else { const b=ui.calMonth?parseD(ui.calMonth):new Date(today0().getFullYear(),today0().getMonth(),1); ui.calMonth=ymd(new Date(b.getFullYear(), b.getMonth()+d, 1)); } renderMain(); break; }
+    case "openDm": markTSeen(id); openSheet({type:"dmview",id}); renderMain(); break;
     case "dmPick": { ui.dmDate=$("#dmD")?.value; ui.dmTitle=$("#dmT")?.value; ui.dmNote=$("#dmN")?.value; const i=ui.dmSel.indexOf(no); if(i>=0) ui.dmSel.splice(i,1); else ui.dmSel.push(no); renderSheet(); break; }
     case "dmAll": { ui.dmDate=$("#dmD")?.value; ui.dmTitle=$("#dmT")?.value; ui.dmNote=$("#dmN")?.value; ui.dmSel = ui.dmSel.length===students().length ? [] : students().map(st=>st.no); renderSheet(); break; }
     case "askDelDm": ui.confirm="delDm"; renderSheet(); break;
@@ -1527,7 +1592,7 @@ document.addEventListener("click", async ev => {
     case "dmUndo": { if(await del("dmDone",`${id}__${+ui.me}`)) toast("해야 할 일로 되돌렸어요."); break; }
     case "newLink": ui.confirm=null; openSheet({type:"linkform"}); setTimeout(()=>$("#lkT")?.focus(),30); break;
     case "editLink": ui.confirm=null; openSheet({type:"linkform",id}); break;
-    case "openLink": openSheet({type:"linkview",id}); break;
+    case "openLink": { openSheet({type:"linkview",id}); if(ui.role==="teacher"){ markTSeen(id); renderMain(); } else if(S.students[ui.me] && S.links[id] && isNew(S.links[id]) && !(S.seen||{})[String(ui.me)]?.open?.[id]){ const sid=String(ui.me); if((S.seen||{})[sid]) await patch("seen",sid,{open:{[id]:true}}); else await put("seen",sid,{no:+ui.me,open:{[id]:true}}); } break; }
     case "askDelLink": ui.confirm="delLink"; renderSheet(); break;
     case "cancelDelLink": ui.confirm=null; renderSheet(); break;
     case "delLink": { ui.confirm=null; closeSheet(); if(await del("links",id)) toast("글을 지웠어요."); break; }
@@ -1609,7 +1674,7 @@ document.addEventListener("click", async ev => {
     case "sendRetake": { const reason=$(`#why_${id}`)?.value.trim()||""; const rid=uid(); ui.confirm=null; if(await put("retakes",rid,{id:rid,examId:id,no:+ui.me,reason,status:"pending",createdAt:new Date().toISOString()})) toast("재시험을 신청했어요. 선생님이 확인하면 여기에 결과가 떠요."); renderMain(); break; }
   }
 });
-document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{ ui.tab=b.dataset.tab; ui.confirm=null; try{localStorage.setItem("tab",ui.tab)}catch(e){} refresh(); }));
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{ if(ui.prevSeen && b.dataset.tab!==ui.tab) delete ui.prevSeen[ui.tab]; ui.tab=b.dataset.tab; ui.confirm=null; try{localStorage.setItem("tab",ui.tab)}catch(e){} refresh(); }));
 
 document.addEventListener("input", ev => { const t=ev.target; if(t.id==="bookIn") ui.bookDraft=t.value; if(t.id==="recText") ui.recText=t.value; });
 document.addEventListener("change", async ev => {
