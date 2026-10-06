@@ -60,8 +60,8 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .who{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:13px}
 .linkbtn{background:none;border:none;color:var(--accent);padding:4px 6px;font-size:13px;font-weight:500}
-.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;width:max-content;max-width:100%}
-.tab{border:none;background:none;padding:8px 18px;border-radius:9px;font-weight:500;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;width:max-content;max-width:100%;overflow-x:auto;scrollbar-width:thin}
+.tab{white-space:nowrap;flex:none;border:none;background:none;padding:8px 14px;border-radius:9px;font-weight:500;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
 .tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
 .badge{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--st-sent);color:var(--st-sent-ink);font-size:12px;display:inline-grid;place-items:center;font-variant-numeric:tabular-nums}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
@@ -481,6 +481,11 @@ span.rchip{cursor:default}
 .wkov td.dsum .cchip+.cchip,.dmatrix td.dsum .cchip+.cchip{margin-left:4px}
 .lkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:18px}
 .lkcard{position:relative;border:none;border-radius:12px;background:var(--st-wait);color:var(--st-wait-ink);min-height:84px;padding:16px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;transition:transform .12s, box-shadow .12s}
+.lkcard.lk-link{background:var(--lk-link);color:var(--lk-link-ink)}
+.lkcard.lk-note{background:var(--lk-note);color:var(--lk-note-ink)}
+:root{--lk-link:#43A96F;--lk-link-ink:#FFFFFF;--lk-note:#FFEB6B;--lk-note-ink:#5C4A00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lk-link:#3C9A64;--lk-note:#E8CF4A;--lk-note-ink:#2A2200}}
+:root[data-theme="dark"]{--lk-link:#3C9A64;--lk-note:#E8CF4A;--lk-note-ink:#2A2200}
 .lkcard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .lkdate{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;letter-spacing:.2px}
 .lkname{font-size:14px;font-weight:500;opacity:.9;word-break:keep-all;line-height:1.35}
@@ -1084,7 +1089,7 @@ function linksView(){
   const T = ui.role==="teacher"; const list = linkList();
   const head = `<div class="ahead"><div><h2>링크함/알림장</h2><p class="muted" style="margin:4px 0 0">${T?"올린 글과 링크는 학생 화면에 바로 나타나요. 링크 없이 알림장 글만 올려도 돼요.":"선생님이 올린 알림장과 수업 링크예요. 눌러서 확인해 보세요."}</p></div>${T?`<button class="btn primary" data-act="newLink">＋ 글·링크 올리기</button>`:""}</div>`;
   if(!list.length) return `<section class="panel">${head}<div class="empty"><h3>아직 올라온 글이 없어요</h3><p>${T?"알림장이나 수업에 쓸 링크를 올리면 학생들에게 카드로 보여요.":"선생님이 글을 올리면 여기에 나타나요."}</p>${T?`<button class="btn primary" data-act="newLink">첫 글 올리기</button>`:""}</div></section>`;
-  return `<section class="panel">${head}<div class="lkgrid">${list.map(l=>`<button class="lkcard" data-act="openLink" data-id="${l.id}">${isNew(l)?`<span class="newtag lknew">NEW</span>`:""}<span class="lkdate">${lkDate(l.date)}</span><span class="lkname">${esc(l.title)}</span>${(l.items||[]).length>1?`<span class="lkcount">링크 ${(l.items||[]).length}개</span>`:!(l.items||[]).length?`<span class="lkcount">📝 알림장</span>`:""}</button>`).join("")}</div></section>`;
+  return `<section class="panel">${head}<div class="lkgrid">${list.map(l=>`<button class="lkcard ${(l.items||[]).length?"lk-link":"lk-note"}" data-act="openLink" data-id="${l.id}">${isNew(l)?`<span class="newtag lknew">NEW</span>`:""}<span class="lkdate">${lkDate(l.date)}</span><span class="lkname">${esc(l.title)}</span>${(l.items||[]).length>1?`<span class="lkcount">링크 ${(l.items||[]).length}개</span>`:!(l.items||[]).length?`<span class="lkcount">📝 알림장</span>`:""}</button>`).join("")}</div></section>`;
 }
 /* 개별 알림 */
 const dmList = () => Object.values(S.dms||{}).sort((a,b)=>(b.date||"").localeCompare(a.date||"") || (b.createdAt||"").localeCompare(a.createdAt||""));
