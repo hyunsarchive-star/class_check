@@ -149,7 +149,7 @@ async function studentAllowed(env, no, op, col, id, data) {
       return op === "update" && onlyKeys(data, ["hearts"]) && heartsOnlyMine(data.hearts, no); // 친구 글에는 좋아요만
     }
     case "photos": return own;
-    case "seen": return id === String(no) && op !== "delete" && onlyKeys(data, ["no", "links", "todo"]) && (data.no === undefined || +data.no === no); // 새 글 확인 시각
+    case "seen": return id === String(no) && op !== "delete" && onlyKeys(data, ["no", "links", "todo", "open"]) && (data.no === undefined || +data.no === no) && (data.open === undefined || (data.open && typeof data.open === "object" && Object.values(data.open).every(v => v === true || v === null))); // 새 글 확인 시각
     case "dmDone": return own && (op === "delete" || (data && +data.no === no && data.by === "s")); // 개별 알림: 자기 것만 '했어요'
     case "absent": return (op === "delete" || (data && /^\d{4}-\d{2}-\d{2}__\d+$/.test(id) && +data.no === +id.split("__")[1])) && await isAnyChecker(env, no); // 검사 도우미만 결석 처리
     case "ideaAnswers": return own && (op === "delete" || +data.no === no);

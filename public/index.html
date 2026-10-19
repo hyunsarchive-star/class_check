@@ -599,6 +599,7 @@ span.ovb{cursor:default}
     <button class="tab" role="tab" data-tab="idea" aria-selected="false">생각모으기</button>
     <button class="tab" role="tab" data-tab="tchk" aria-selected="false" hidden>체크리스트</button>
     <button class="tab" role="tab" data-tab="exam" aria-selected="false">수행평가 <span id="retakeBadge"></span></button>
+    <button class="tab" role="tab" data-tab="unit" aria-selected="false">단원평가 <span id="unitBadge"></span></button>
     <button class="tab" role="tab" data-tab="records" aria-selected="false" hidden>누가기록</button>
     <button class="tab" role="tab" data-tab="students" aria-selected="false" hidden>학생 관리</button>
   </nav>
@@ -632,7 +633,10 @@ const fmt = iso => { if(!iso) return ""; const d = new Date(iso); return `${d.ge
 const fmtDate = s => { if(!s) return ""; const [y,m,d] = s.split("-"); return `${+m}월 ${+d}일`; };
 const students = () => Object.values(S.students).sort((a,b)=>a.no-b.no);
 const assigns = () => Object.values(S.assignments).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
-const exams = () => Object.values(S.exams).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+const exKind = () => ui.tab==="unit" ? "unit" : "perf";
+const kindOf = e => (e && e.kind) || "perf";
+const EXW = s => ui.tab==="unit" ? String(s).replace(/수행평가/g,"단원평가") : s;
+const exams = () => Object.values(S.exams).filter(e=>kindOf(e)===exKind()).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
 const subOf = (aid,no) => S.submissions[`${aid}__${no}`];
 const statusOf = (aid,no) => { const s = subOf(aid,no); return !s ? "wait" : s.status === "checked" ? "done" : s.status === "returned" ? "back" : "sent"; };
 const OK_STAMPS = ["최고!👍🏻✨","고생했어요🍀","다음엔 조금 더 자세히📝"];
@@ -644,7 +648,7 @@ const gradeOf = (e,v) => { if(v===undefined||v===null||v==="") return null; cons
 const ST_STUDENT = { wait:{t:"아직 안 냈어요",c:"s-wait"}, sent:{t:"제출 완료 · 선생님 확인 중",c:"s-sent"}, done:{t:"선생님 확인 완료",c:"s-done"}, back:{t:"반려됨 · 다시 내 주세요",c:"s-wait"} };
 
 /* ---------- store ---------- */
-function toast(msg){ const r=$("#toastRoot"); r.innerHTML=`<div class="toast" role="status">${esc(msg)}</div>`; clearTimeout(toast.t); toast.t=setTimeout(()=>r.innerHTML="",2600); }
+function toast(msg){ msg=EXW(msg); const r=$("#toastRoot"); r.innerHTML=`<div class="toast" role="status">${esc(msg)}</div>`; clearTimeout(toast.t); toast.t=setTimeout(()=>r.innerHTML="",2600); }
 function fail(e){ console.error(e); const c=e&&e.code; if(c==="not_logged_in"||c==="session_expired"){ toast("로그인이 풀렸어요. 다시 들어와 주세요."); return; } if(c==="unavailable"){ toast("서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요."); return; } if(e && e.status && e.message && c!=="permission_denied"){ toast(/컬렉션|주소가 올바르지/.test(e.message) ? "서버 파일이 예전 버전이에요. functions/api/[[path]].js를 최신 파일로 다시 올려 주세요." : e.message); return; } toast(c==="not_granted"||c==="permission_denied"||c==="invalid_argument" ? "저장 권한이 없어요. 선생님께 편집 권한을 받아 주세요." : c==="quota_exceeded" ? "저장 공간이 가득 찼어요. 오래된 과제를 지워 주세요." : "저장하지 못했어요. 잠시 후 다시 시도해 주세요."); }
 async function put(col,id,data){ try{ if(db) await db.collection(col).doc(id).set(data); else { S[col][id]=data; refresh(); } return true; }catch(e){ fail(e); return false; } }
 async function patch(col,id,data){ try{ if(db) await db.collection(col).doc(id).update(data); else { const cur=S[col][id]||{}; for(const k in data){ cur[k] = (data[k] && typeof data[k]==="object" && !Array.isArray(data[k]) && cur[k] && typeof cur[k]==="object") ? {...cur[k],...data[k]} : data[k]; } S[col][id]=cur; refresh(); } return true; }catch(e){ fail(e); return false; } }
@@ -665,8 +669,10 @@ function renderChrome(){
   document.querySelectorAll('.tab[data-tab="students"],.tab[data-tab="records"],.tab[data-tab="tchk"]').forEach(b=>b.hidden = ui.role!=="teacher");
   if(ui.role!=="teacher" && (ui.tab==="students"||ui.tab==="records"||ui.tab==="tchk")) ui.tab="hw";
   document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.tab===ui.tab)));
-  const pend = Object.values(S.retakes).filter(r=>r.status==="pending").length;
+  const pendOf = k => Object.values(S.retakes).filter(r=>r.status==="pending" && S.exams[r.examId] && kindOf(S.exams[r.examId])===k).length;
+  const pend = pendOf("perf"), pendU = pendOf("unit");
   $("#retakeBadge").innerHTML = ui.role==="teacher" && pend ? `<span class="badge">${pend}</span>` : "";
+  $("#unitBadge").innerHTML = ui.role==="teacher" && pendU ? `<span class="badge">${pendU}</span>` : "";
   const nb = ui.role==="student" && S.students[ui.me] ? newCounts(+ui.me) : {links:0,todo:0};
   $("#lkBadge").innerHTML = nb.links && ui.tab!=="links" ? `<span class="badge">${nb.links}</span>` : "";
   $("#tdBadge").innerHTML = nb.todo && ui.tab!=="todo" ? `<span class="badge">${nb.todo}</span>` : "";
@@ -694,7 +700,7 @@ function renderMain(){
   if(ui.tab==="board") { m.innerHTML = boardView(); hydratePhotos(); return; }
   if(ui.tab==="idea") { m.innerHTML = ideaView(); drawIdea(); return; }
   if(ui.tab==="hw") m.innerHTML = ui.role==="teacher" ? teacherHW() : studentHW();
-  else m.innerHTML = ui.role==="teacher" ? teacherExam() : studentExam();
+  else { if(ui.tab!=="exam" && ui.tab!=="unit") ui.tab="exam"; m.innerHTML = EXW(ui.role==="teacher" ? teacherExam() : studentExam()); }
 }
 
 function pickView(){
@@ -1196,7 +1202,7 @@ function calView(me){
   const byDay={}; const add=(d,x)=>{ (byDay[ymd(d)] = byDay[ymd(d)]||[]).push(x); };
   todoList().forEach(t=>calInstances(t,first,last).forEach(i=>{ if(excused(t,i.period,me)) return; const rec=S.todoDone[doneKey(t.id,i.period,me)]; const st=dState(rec);
     const nm = isExam(t) ? t.title : (CAL_NAME[t.cat] || t.title); const numOnly = i.num ? String(i.num).match(/^\d+/)?.[0] : null;
-    add(i.due,{color:tdColor(t.cat), txt: numOnly && t.type!=="daily" ? `${nm} ${numOnly}번` : nm, done:!!st, late:!st && i.due<today0() && !(isExam(t)), sub:"" }); }));
+    add(i.due,{color:tdColor(t.cat), txt: numOnly && t.type!=="daily" ? `${nm} ${numOnly}번` : nm, done:!!st || (isExam(t) && i.due<today0()), late:!st && i.due<today0() && !(isExam(t)), sub:"" }); }));
   myDms(me).forEach(m=>{ if(!m.date) return; const d=parseD(m.date); if(d<first||d>last) return; add(d,{color:"var(--st-done)", txt:"개별 알림", done:!!dmDoneOf(m.id,me), late:false, sub:""}); });
   const lead=first.getDay(); const cells=[]; for(let i=0;i<lead;i++) cells.push(`<div class="calc out"></div>`);
   for(let d=1; d<=last.getDate(); d++){ const dt=new Date(y,mo,d); const key=ymd(dt); const items=byDay[key]||[]; const isT=+dt===+today0(); const w=dt.getDay();
@@ -1335,7 +1341,7 @@ function teacherExam(){
     const foot = `<tr><td class="c-no"></td><td class="c-nm">분포</td>${flat.map(({e,g,first})=>{ const d=[0,0,0,0]; students().forEach(s=>{ const k=gradeOf(e,(e.scores||{})[s.no]); if(k!==null) d[k]++; }); return `<td class="${first?"first":""}" style="--sc:var(--sc-${g.i})"><div class="dist" title="매우잘함·잘함·보통·노력요함">${d.map((n,k)=>`<span class="${GR[k][1]}">${n}</span>`).join("")}</div></td>`; }).join("")}</tr>`;
     table = `<div class="tablewrap"><table class="matrix"><thead><tr><th class="c-no" rowspan="2">번호</th><th class="c-nm" rowspan="2">이름</th>${head1}</tr><tr>${head2}</tr></thead><tbody>${rows}</tbody><tfoot>${foot}</tfoot></table></div>`;
   }
-  const reqs = Object.values(S.retakes).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||"")).filter(r=> cur==="전체" || S.exams[r.examId]?.subject===cur);
+  const reqs = Object.values(S.retakes).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||"")).filter(r=>S.exams[r.examId] && kindOf(S.exams[r.examId])===exKind()).filter(r=> cur==="전체" || S.exams[r.examId]?.subject===cur);
   const RS = {pending:["검토 중","s-sent"],approved:["승인","s-done"],rejected:["반려","s-none"]};
   const reqHtml = `<section class="panel"><h2>재시험 신청 <span class="muted">${reqs.filter(r=>r.status==="pending").length}건 대기</span></h2>${reqs.length? `<div class="list">${reqs.map(r=>{ const s=S.students[r.no]; const e=S.exams[r.examId]; const gi=e?Math.max(0,SUBJ.indexOf(e.subject)):7; const v=e?(e.scores||{})[r.no]:null;
     return `<div class="req" style="border-left:5px solid var(--sc-${e&&SUBJ.includes(e.subject)?gi:7})"><div class="line1"><b>${r.no}번 ${esc(s?.name||"")} · ${e?`${esc(e.subject||"")} ${esc(e.unit||e.title)}`:"삭제된 평가"}</b><span class="status ${RS[r.status][1]}">${RS[r.status][0]}</span></div><div class="muted">${fmt(r.createdAt)} 신청${e?` · 현재 ${gradeOf(e,v)===null?"–":GR[gradeOf(e,v)][0]}${v!=null&&v!==""?` (${esc(v)}점)`:""}`:""}${r.reason?` · “${esc(r.reason)}”`:""}</div>${r.reply?`<div class="muted">답변: ${esc(r.reply)}</div>`:""}${r.status==="pending"?`<input class="inp" id="reply_${r.id}" placeholder="답변 (예: 10월 7일 점심시간에 교실로 오세요)"><div class="actions"><button class="btn ok" data-act="retake" data-id="${r.id}" data-v="approved">승인</button><button class="btn" data-act="retake" data-id="${r.id}" data-v="rejected">반려</button></div>`:""}</div>`; }).join("")}</div>` : `<p class="muted">아직 들어온 신청이 없어요.</p>`}</section>`;
@@ -1530,6 +1536,7 @@ function renderSheet(){
       ${a.share==="board"?`<label class="f" for="lF">링크 (선택)<input class="inp" id="lF" type="text" inputmode="url" value="${esc(sub?.link||"")}" placeholder="유튜브나 웹페이지 주소를 붙여 넣어요"></label>`:""}
       <button class="btn primary" type="submit" id="subBtn">${sub?"다시 제출하기":"제출하기"}</button></form>`}`;
   }
+  if(s.type==="exam") body = EXW(body);
   r.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true">${body}</div></div>`;
   const ph = r.querySelector("#phHolder");
   if(ph){ const sid = s.type==="post" ? `${s.aid}__${s.no}` : s.type==="sub" ? `${ui.selA}__${s.no}` : `${s.id}__${ui.me}`; getPhoto(sid).then(src=>{ if(!ph.isConnected) return; ph.outerHTML = src ? `<img class="photo" src="${src}" alt="제출한 사진">` : `<div class="muted">사진을 불러오지 못했어요.</div>`; }); }
@@ -1733,7 +1740,7 @@ document.addEventListener("submit", async ev => {
     if(!(cut.a>cut.b && cut.b>cut.c && cut.c>=0 && cut.a<=max)){ toast(`점수 구간은 매우잘함 > 잘함 > 보통 순서이고, 만점(${max}) 이하여야 해요.`); return; }
     const sid=ui.sheet.id;
     if(sid){ if(await patch("exams",sid,{subject,unit,title:unit,max,date,cut})){ closeSheet(); toast("저장했어요."); } }
-    else { const id=uid(); if(await put("exams",id,{id,subject,unit,title:unit,max,date,cut,scores:{},comments:{},createdAt:new Date().toISOString()})){ ui.subj=subject; closeSheet(); renderMain(); toast(`${subject} 수행평가를 추가했어요.`); } } }
+    else { const id=uid(); if(await put("exams",id,{id,kind:exKind(),subject,unit,title:unit,max,date,cut,scores:{},comments:{},createdAt:new Date().toISOString()})){ ui.subj=subject; closeSheet(); renderMain(); toast(`${subject} 수행평가를 추가했어요.`); } } }
   if(f.id==="fPostEdit"){ const s=ui.sheet; const k=`${s.aid}__${s.no}`; const sub=S.submissions[k]; if(!sub) return;
     const text=$("#peT").value.trim(); const title=$("#peTi").value.trim(); const linkRaw=$("#peL").value.trim(); const link=safeUrl(linkRaw); if(linkRaw && !link){ toast("링크 주소를 다시 확인해 주세요."); return; } const src=$("#pF")?._src||null; const dropPh = $("#peDel")?.checked && !src;
     const hasPhoto = src ? true : dropPh ? false : !!sub.hasPhoto;
