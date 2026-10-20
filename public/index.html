@@ -454,6 +454,13 @@ span.rchip{cursor:default}
 .bigcard .sub{font-size:13px;opacity:.85}
 .readylist{display:flex;flex-wrap:wrap;gap:6px}
 .readylist .cchip{font-size:13px;padding:5px 10px}
+.uwchip{cursor:pointer;border:1px solid transparent;font-family:inherit}
+.uwchip.c-done{border-color:color-mix(in srgb, var(--st-done) 30%, transparent)}
+.uwchip.c-full{border-color:color-mix(in srgb, var(--tc-3) 40%, transparent)}
+.uwchip:hover{filter:brightness(.96);outline:2px solid var(--accent);outline-offset:1px}
+.uwchip.c-late{border-color:color-mix(in srgb, var(--st-sent) 35%, transparent)}
+.uwchip.c-pend{box-shadow:inset 0 0 0 2px var(--st-sent)}
+.s-none{background:var(--st-none-ink)}
 .popov{position:fixed;inset:0;z-index:60;background:rgba(10,14,22,.5);display:grid;place-items:center;padding:16px;animation:popfade .15s ease-out}
 .popbox{background:var(--surface);color:var(--ink);border-radius:20px;padding:28px 24px 22px;max-width:360px;width:100%;text-align:center;box-shadow:var(--shadow);border-top:6px solid var(--st-pass);animation:popin .2s ease-out}
 .popicon{font-size:44px;line-height:1}
@@ -1077,6 +1084,13 @@ function todoDetail(t, ins, cur){
     return `<div class="adetail">${t.desc?`<p class="desc" style="margin:0">${esc(t.desc)}</p>`:""}<div class="ahead"><span class="muted">${isNotice(t)?"안내 기한":"시험일"} ${md(inst.due)} · ${ddText(inst.due)} · ${isNotice(t)?"기한이":"시험이"} 지나면 학생 화면에서 저절로 사라져요.</span>${tdActions(t)}</div>
       <div class="tally"><span><i class="s-done"></i>${readyWord(t)} <b>${ready.length}</b></span><span><i class="s-wait"></i>아직 <b>${notyet.length}</b></span><span>학생이 "${isNotice(t)?"확인했어요":"준비 완료!"}"를 누르면 여기에 표시돼요. 따로 확인할 필요는 없어요.</span></div>
       <div class="readylist">${ready.map(st=>`<span class="cchip c-done">${st.no} ${esc(st.name)}</span>`).join("")}${notyet.map(st=>`<span class="cchip c-none">${st.no} ${esc(st.name)}</span>`).join("")}</div></div>`; }
+  if(isUnitWrong(t)){ const inst=cur||ins[0]; const cnt={done:0,full:0,pass:0,wait:0,late:0,fine:0};
+    const chips = students().map(st=>{ const c=cellOf(t,inst,st.no); cnt[c]=(cnt[c]||0)+1; const r=S.todoDone[doneKey(t.id,inst.period,st.no)]; const pd=isPend(r);
+      const cl = c==="full"?"c-full":c==="done"||c==="fine"||c==="pass"?"c-done":c==="late"?"c-late":"c-none";
+      return `<button class="cchip uwchip ${cl}${pd?" c-pend":""}" data-act="tdToggle" data-id="${t.id}" data-p="${inst.period}" data-no="${st.no}" title="${st.no}번 ${esc(st.name)} · ${c==="full"?"만점":c==="done"?"완료":c==="late"?"마감 지남":"아직"}${pd?" · 학생이 표시함, 눌러서 확인":""}">${st.no} ${esc(st.name)}${pd?` <i class="pend">!</i>`:""}</button>`; }).join("");
+    return `<div class="adetail">${t.desc?`<p class="desc" style="margin:0">${esc(t.desc)}</p>`:""}<div class="ahead"><span class="muted">마감 ${md(inst.due)} · ${ddText(inst.due)}</span>${tdActions(t)}</div>
+      <div class="tally"><span><i class="s-done"></i>오답 완료 <b>${cnt.done+(cnt.fine||0)+cnt.pass}</b></span><span><i class="s-full"></i>만점 <b>${cnt.full}</b></span><span><i class="s-none"></i>아직 <b>${cnt.wait}</b></span>${cnt.late?`<span><i class="s-sent"></i>마감 지남 <b>${cnt.late}</b></span>`:""}<span>이름을 누를 때마다 완료(초록) → 만점(하늘) → 아직으로 바뀌어요. 마감이 지나도 안 한 학생은 빨간색이에요.</span><button class="linkbtn" data-act="tdAll" data-id="${t.id}" data-p="${inst.period}">남은 학생 모두 완료로</button></div>
+      <div class="readylist">${chips}</div></div>`; }
   if(t.type==="daily") return dailyMatrix(t, ins);
   if(t.type==="weekly") return `<div class="adetail">${t.desc?`<p class="desc" style="margin:0">${esc(t.desc)}</p>`:""}<div class="ahead">${checkerCtl(t)}${tdActions(t)}</div>${weeklyMatrix(t, ins, false)}</div>`;
   if(!ui.tdPeriod || !ins.some(i=>i.period===ui.tdPeriod)) ui.tdPeriod = (cur||ins[0]).period;
