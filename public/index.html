@@ -561,6 +561,8 @@ span.ovb{cursor:default}
 .tkc:hover{background:var(--accent-soft)}.tkc.on{background:var(--st-done)}.tkc:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .tktbl tbody tr:hover .tks{background:var(--accent-soft)}
 @media (max-width:640px){.tdrow .tdbtns{grid-column:2/-1;justify-self:stretch;justify-content:flex-start}.tdrow .tdblk{grid-row:1/span 2}.tdrow .bookin{flex:1 1 140px;min-width:0}}
+.foldsec{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;box-sizing:border-box;margin:18px 0 8px;font-size:16px;font-weight:700}
+.foldsec .foldtg{margin-left:auto}
 .foldhead{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;box-sizing:border-box;border-radius:10px}
 .ahead > .foldhead{width:auto;flex:1 1 auto}
 .foldhead:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
@@ -636,7 +638,9 @@ ui.me = null;
 const failCount = {}; let tFail = 0, lockUntil = 0;
 /* 로그인 상태: 서버가 확인한 토큰으로 판단해요 (체험 모드에서는 모두 열림) */
 const tUnlocked = () => !db || db.auth.role==="t";
-function applyGate(){ if(ui.role==="teacher" && !tUnlocked()) ui.role="student"; if(db && ui.me && !(db.auth.role==="s" && db.auth.no===+ui.me)) ui.me=null; }
+const canPeek = () => !db || db.auth.role==="t";
+const peeking = () => ui.role==="student" && !!db && db.auth.role==="t";
+function applyGate(){ if(ui.role==="teacher" && !tUnlocked()) ui.role="student"; if(db && ui.me && db.auth.role!=="t" && !(db.auth.role==="s" && db.auth.no===+ui.me)) ui.me=null; }
 try { const t = localStorage.getItem("tab"); if (t) ui.tab = t; } catch(e){}
 if (location.hash === "#exam") ui.tab = "exam";
 
@@ -695,7 +699,7 @@ function renderChrome(){
   const w=$("#who"); let h="";
   if(!db) h += `<span class="demo">체험 모드 · 서버 연결 안 됨</span>`;
   if(ui.role==="teacher"){ h += `<span class="pill">선생님 화면</span>`; if(isTeacher) h+=`<button class="linkbtn" data-act="asStudent">학생 화면으로 보기</button>`; }
-  else { const me = S.students[ui.me]; h += me ? `<span class="pill"><b>${me.no}번</b> ${esc(me.name)}</span><button class="linkbtn" data-act="myPin">비밀번호 설정</button><button class="linkbtn" data-act="logout">나가기</button>` : ""; if(isTeacher) h+=`<button class="linkbtn" data-act="asTeacher">${tUnlocked()?"선생님 화면으로":"🔒 선생님 로그인"}</button>`; }
+  else { const me = S.students[ui.me]; h += me ? `<span class="pill"><b>${me.no}번</b> ${esc(me.name)}</span>${canPeek()?"":`<button class="linkbtn" data-act="myPin">비밀번호 설정</button>`}<button class="linkbtn" data-act="logout">${canPeek()?"다른 학생 보기":"나가기"}</button>` : ""; if(isTeacher) h+=`<button class="linkbtn" data-act="asTeacher">${tUnlocked()?"선생님 화면으로":"🔒 선생님 로그인"}</button>`; if(isTeacher && canPeek() && !!db) h+=`<button class="linkbtn" data-act="tLock" title="학생에게 기기를 넘겨줄 때 눌러 주세요">🔒 선생님 로그아웃</button>`; }
   w.innerHTML = h;
   $("#modeLabel").textContent = ui.role==="teacher" ? `학생 ${students().length}명` : "";
 }
@@ -1051,7 +1055,10 @@ function todoTeacher(){
   const all = todoList(); const N = students().length;
   const head = `<div class="ahead"><div><h2>ToDoList</h2><p class="muted" style="margin:4px 0 0">보낸 할 일은 학생 화면에 바로 나타나요. 줄을 누르면 학생별로 했는지 확인할 수 있어요.</p></div><button class="btn primary" data-act="newTodo">＋ 할 일 보내기</button></div>${tdViewBar()}`;
   if(!all.length) return `<section class="panel">${head}${tdLegend()}<div class="empty"><h3>아직 보낸 할 일이 없어요</h3><p>매주 하는 일(독서록, 주제글쓰기, 비문학), 매일 하는 일(오늘하루), 한 번만 할 일을 보내 보세요.</p><button class="btn primary" data-act="newTodo">첫 할 일 보내기</button></div></section>`;
-  const active = all.filter(t=>!(t.type==="once" ? parseD(t.due)<addDays(today0(), isExam(t)?0:-14) : t.endedAt)), old = all.filter(t=>!active.includes(t));
+  const allDoneOnce = t => { if(t.type!=="once" || !t.due || !N) return false; const i=instancesOf(t)[0]; return !!i && students().every(st=>dState(S.todoDone[doneKey(t.id,i.period,st.no)])); };
+  const doneList = all.filter(t=>allDoneOnce(t));
+  const old = all.filter(t=>!doneList.includes(t) && (t.type==="once" ? (t.due && parseD(t.due)<today0()) : !!t.endedAt));
+  const active = all.filter(t=>!doneList.includes(t) && !old.includes(t));
   const row = t => { const ins=instancesOf(t); const sel = ui.tdSel===t.id; const cur = t.type==="weekly" ? (ins.find(i=>i.due>=today0() && dayDiff(i.due,today0())<7) || ins[0]) : ins[0];
     const ds = cur ? students().map(st=>dState(S.todoDone[doneKey(t.id,cur.period,st.no)])) : [];
     const nd = ds.filter(Boolean).length, np = ds.filter(x=>x==="pass").length;
@@ -1060,7 +1067,8 @@ function todoTeacher(){
       <span class="aprog">${cur?`<span class="pbar"><i class="s-done" style="width:${N?(nd-np)/N*100:0}%"></i><i class="s-pass" style="width:${N?np/N*100:0}%"></i></span><span>${t.type==="once"?"":t.type==="daily"?`${md(cur.due)} `:`${cur.label} `}${isExam(t)?readyWord(t):"완료"} <b>${nd}</b>/${N}${np?` · 면제 ${np}`:""}</span>`:`<span>아직 회차 없음</span>`}</span>
       ${cur?ddBadge(cur.due, nd===N && N>0 ? "done" : null):""}<span class="chev" aria-hidden="true">${sel?"▴":"▾"}</span></button>${sel?todoDetail(t,ins,cur):""}</div>`; };
   return `<section class="panel">${head}${tdLegend()}<div class="alist">${active.map(row).join("")||`<p class="muted">진행 중인 할 일이 없어요.</p>`}</div>
-    ${old.length?`<h3 class="sechead">지난 할 일 <span class="muted">${old.length}</span></h3><div class="alist">${old.map(row).join("")}</div>`:""}</section>`;
+    ${doneList.length?`<button class="sechead foldsec" data-act="fold" data-v="tdDoneSec" aria-expanded="${!folded("tdDoneSec")}">✅ 다 한 할 일 <span class="muted">${doneList.length}</span><span class="foldtg">${folded("tdDoneSec")?"펼치기 ▾":"접기 ▴"}</span></button>${folded("tdDoneSec")?"":`<div class="alist">${doneList.map(row).join("")}</div>`}`:""}
+    ${old.length?`<button class="sechead foldsec" data-act="fold" data-v="tdOldSec" aria-expanded="${!folded("tdOldSec")}">🗂 지난 할 일 <span class="muted">${old.length}</span><span class="foldtg">${folded("tdOldSec")?"펼치기 ▾":"접기 ▴"}</span></button>${folded("tdOldSec")?"":`<div class="alist">${old.map(row).join("")}</div>`}`:""}</section>`;
 }
 /* 휴일 · 결석 (매일 하는 일에만 적용돼요) */
 const isHoliday = d => !!(S.dayoff||{})[`h_${d}`];
@@ -1163,7 +1171,7 @@ function newFor(x,key){ if(!isNew(x)) return false;
   const no=+ui.me; if(key==="links") return !(S.seen||{})[String(no)]?.open?.[x.id];
   const since = (ui.prevSeen&&ui.prevSeen[key]!==undefined) ? ui.prevSeen[key] : seenAt(no,key);
   return new Date(x.createdAt).getTime() > since; }
-async function markSeen(no,key){ if(seenBusy[key]) return; seenBusy[key]=true; ui.prevSeen=ui.prevSeen||{}; if(ui.prevSeen[key]===undefined) ui.prevSeen[key]=seenAt(no,key); const id=String(no); const cur=(S.seen||{})[id];
+async function markSeen(no,key){ if(seenBusy[key] || peeking()) return; seenBusy[key]=true; ui.prevSeen=ui.prevSeen||{}; if(ui.prevSeen[key]===undefined) ui.prevSeen[key]=seenAt(no,key); const id=String(no); const cur=(S.seen||{})[id];
   const at=new Date().toISOString(); let ok=false; try{ ok = cur ? await patch("seen",id,{[key]:at}) : await put("seen",id,{no,[key]:at}); } finally { seenBusy[key]=!ok; } }
 /* 링크함/알림장 */
 const lkDate = s => { const d=parseD(s); return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}. (${WDN[d.getDay()]})`; };
@@ -1576,13 +1584,14 @@ document.addEventListener("click", async ev => {
   if(act==="scrim" && ev.target!==t) return;
   switch(act){
     case "scrim": case "close": closeSheet(); break;
-    case "pick": openSheet({type: S.pins[no] ? "pin" : "pinnew", no}); setTimeout(()=>($("#pinIn")||$("#pnA"))?.focus(),30); break;
-    case "logout": ui.me=null; if(db) db.logout(); refresh(); break;
+    case "pick": if(canPeek() && S.students[no]){ ui.me=no; ui.meOk=true; closeSheet(); refresh(); toast(`${no}번 ${S.students[no].name} 화면이에요. (선생님이라 비밀번호 없이 봐요)`); break; } openSheet({type: S.pins[no] ? "pin" : "pinnew", no}); setTimeout(()=>($("#pinIn")||$("#pnA"))?.focus(),30); break;
+    case "logout": ui.me=null; if(db && db.auth.role!=="t") db.logout(); refresh(); break;
+    case "tLock": ui.me=null; ui.role="student"; if(db) db.logout(); closeSheet(); refresh(); toast("선생님 로그아웃했어요. 이제 학생은 비밀번호를 넣어야 들어가요."); break;
     case "tLock": if(db) db.logout(); ui.role="student"; ui.me=null; closeSheet(); refresh(); break;
     case "askResetPin": ui.confirm=`rpin_${no}`; renderMain(); break;
     case "resetPin": { ui.confirm=null; if(await setPin(no,"")) toast(`${no}번 비밀번호를 초기화했어요. 다음에 들어올 때 새로 만들어요.`); renderMain(); break; }
     case "myPin": openSheet({type:"pinchange", no:+ui.me}); setTimeout(()=>($("#pcOld")||$("#pnA"))?.focus(),30); break;
-    case "asStudent": ui.role="student"; ui.me=null; if(db) db.logout(); closeSheet(); refresh(); break;
+    case "asStudent": ui.role="student"; ui.me=null; closeSheet(); refresh(); break;
     case "asTeacher": if(!tUnlocked()){ openSheet({type:"tpin"}); setTimeout(()=>$("#pinIn")?.focus(),30); break; } ui.role="teacher"; closeSheet(); refresh(); break;
     case "selA": ui.selA = ui.selA===id ? "none" : id; ui.confirm=null; renderMain(); break;
     case "recPick": { const i=ui.recSel.indexOf(no); if(i>=0) ui.recSel.splice(i,1); else ui.recSel.push(no); renderMain(); break; }
@@ -1601,14 +1610,15 @@ document.addEventListener("click", async ev => {
     case "tdDone": { if(await put("todoDone",doneKey(id,t.dataset.p,+ui.me),{tid:id,period:t.dataset.p,no:+ui.me,by:"s",kind:"done",at:new Date().toISOString()})) toast(isNotice(S.todos[id])?"확인했어요! 👍":S.todos[id]&&isExam(S.todos[id])?"준비 완료! 시험 잘 봐요 💪":"잘했어요! 완료한 일로 옮겼어요."); break; }
     case "tdFull": { if(await put("todoDone",doneKey(id,t.dataset.p,+ui.me),{tid:id,period:t.dataset.p,no:+ui.me,by:"s",kind:"full",at:new Date().toISOString()})) toast("💯 만점! 정말 잘했어요!"); break; }
     case "tdUndo": { if(await del("todoDone",t.dataset.k)) toast("해야 할 일로 되돌렸어요."); break; }
-    case "tdToggle": { const k=doneKey(id,t.dataset.p,no); const cur=dState(S.todoDone[k]); const base={tid:id,period:t.dataset.p,no,by: ui.role==="teacher"?"t":"c", ...(ui.role==="teacher"?{}:{checker:+ui.me}), at:new Date().toISOString()};
+    case "tdToggle": { const k=doneKey(id,t.dataset.p,no); const nowT=Date.now(); if(ui.lastTog && ui.lastTog.k===k && nowT-ui.lastTog.t<700) break; ui.lastTog={k,t:nowT}; const cur=dState(S.todoDone[k]); const base={tid:id,period:t.dataset.p,no,by: ui.role==="teacher"?"t":"c", ...(ui.role==="teacher"?{}:{checker:+ui.me}), at:new Date().toISOString()};
       if(ui.role!=="teacher"){ const td=S.todos[id]; if(!td || !isChecker(td,+ui.me)){ toast("검사 권한이 없어요."); break; } }
       const rec=S.todoDone[k]; const tdT=S.todos[id];
       if(tdT && tdT.type!=="once"){ const inst=instancesOf(tdT,60).find(x=>x.period===t.dataset.p); if(inst && cellOf(tdT,inst,no)==="abs"){ const ad=absDateOf(tdT,t.dataset.p); if(ad && await setAbsence(ad,no,false)) toast(`${no}번 결석을 풀었어요.`); break; } }
       if(!cur) await put("todoDone",k,{...base,kind:"done"});
       else if(rec.by==="s"){ await put("todoDone",k,{...rec,...base,kind:rec.kind,orig:"s",submittedAt:rec.at}); toast(`${no}번 ${cur==="pass"?"면제권":cur==="full"?"만점":"제출"}을 확인했어요.${rec.book?` 📖 ${rec.book}`:""}`); }
       else if(rec.orig==="s" && cur==="done" && t.dataset.fine==="1"){ await put("todoDone",k,{...rec,...base,kind:"fine",orig:"s"}); }
-      else if(rec.orig==="s"){ await put("todoDone",k,{...base,kind:"redo",book:rec.book||""}); toast(`${no}번 학생 화면에 다시 할 일로 보냈어요.`); }
+      else if(rec.orig==="s" && !(ui.redoArm && ui.redoArm.k===k && nowT-ui.redoArm.t<5000)){ ui.redoArm={k,t:nowT}; toast(`${no}번이 스스로 한 것을 확인했어요. 다시 하라고 돌려보내려면 4초 안에 한 번 더 눌러 주세요.`); }
+      else if(rec.orig==="s"){ ui.redoArm=null; await put("todoDone",k,{...base,kind:"redo",book:rec.book||""}); toast(`${no}번 학생 화면에 다시 할 일로 보냈어요.`); }
       else if(cur==="done" && isSpell(tdT)) await put("todoDone",k,{...base,kind:"full"});
       else if(cur==="done" && t.dataset.fine==="1") await put("todoDone",k,{...base,kind:"fine"});
       else if(cur==="done"||cur==="fine"||(cur==="full" && !isSpell(tdT))){ const td=S.todos[id]; const pb = td && PASS_CATS.includes(td.cat) ? passBlocked(td,t.dataset.p,no) : "면제권을 쓸 수 없는 할 일이에요."; if(pb && ui.role!=="teacher"){ await del("todoDone",k); toast(pb); } else { await put("todoDone",k,{...base,kind:"pass"}); if(pb) toast(`선생님 권한으로 면제 처리했어요. (${pb})`); } }
@@ -1645,7 +1655,7 @@ document.addEventListener("click", async ev => {
     case "dmUndo": { if(await del("dmDone",`${id}__${+ui.me}`)) toast("해야 할 일로 되돌렸어요."); break; }
     case "newLink": ui.confirm=null; openSheet({type:"linkform"}); setTimeout(()=>$("#lkT")?.focus(),30); break;
     case "editLink": ui.confirm=null; openSheet({type:"linkform",id}); break;
-    case "openLink": { openSheet({type:"linkview",id}); if(ui.role==="teacher"){ markTSeen(id); renderMain(); } else if(S.students[ui.me] && S.links[id] && isNew(S.links[id]) && !(S.seen||{})[String(ui.me)]?.open?.[id]){ const sid=String(ui.me); if((S.seen||{})[sid]) await patch("seen",sid,{open:{[id]:true}}); else await put("seen",sid,{no:+ui.me,open:{[id]:true}}); } break; }
+    case "openLink": { openSheet({type:"linkview",id}); if(ui.role==="teacher"){ markTSeen(id); renderMain(); } else if(!peeking() && S.students[ui.me] && S.links[id] && isNew(S.links[id]) && !(S.seen||{})[String(ui.me)]?.open?.[id]){ const sid=String(ui.me); if((S.seen||{})[sid]) await patch("seen",sid,{open:{[id]:true}}); else await put("seen",sid,{no:+ui.me,open:{[id]:true}}); } break; }
     case "askDelLink": ui.confirm="delLink"; renderSheet(); break;
     case "cancelDelLink": ui.confirm=null; renderSheet(); break;
     case "delLink": { ui.confirm=null; closeSheet(); if(await del("links",id)) toast("글을 지웠어요."); break; }
