@@ -104,7 +104,7 @@
           if (x.d === null) delete c[x.i]; else c[x.i] = x.d;
           touched.add(x.c);
         }
-        since = j.v;
+        since = j.v; ClassDB.lastError = null;
         if (!synced) { if (j.more) continue; synced = true; emitAll(); }
         else touched.forEach(emit);
         fails = 0;
@@ -112,7 +112,7 @@
         if (hidden) await sleep(20000);
       } catch (e) {
         if (my !== gen) return;
-        fails++;
+        fails++; ClassDB.lastError = (e && e.message) || "연결 오류";
         await sleep(Math.min(15000, 1500 * fails));
       }
     }

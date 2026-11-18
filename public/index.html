@@ -721,7 +721,8 @@ function renderChrome(){
 /* ---------- main ---------- */
 function renderMain(){
   const m=$("#main"); if(loaded) applyGate();
-  if(!loaded){ m.innerHTML=`<div class="panel empty"><h3>불러오는 중…</h3></div>`; return; }
+  if(!loaded){ const er = db && db.lastError; const limit = er && /row read limit|free tier|daily/i.test(er);
+    m.innerHTML = er ? `<div class="panel empty"><h3>${limit?"오늘 서버 무료 사용량을 다 썼어요":"서버에서 데이터를 불러오지 못하고 있어요"}</h3><p>${limit?"Cloudflare 무료 요금제의 하루 읽기 한도를 넘었어요. 데이터는 지워지지 않고 그대로 있어요. 오전 9시(한국 시간)에 한도가 다시 채워지면 저절로 열려요.":"잠시 뒤 저절로 다시 연결을 시도해요. 데이터는 지워지지 않았어요."}</p><p class="muted" style="font-size:12px">${esc(String(er).slice(0,160))}</p></div>` : `<div class="panel empty"><h3>불러오는 중…</h3></div>`; return; }
   if(ui.role==="student" && !S.students[ui.me]) { m.innerHTML = pickView(); return; }
   if((ui.tab==="students"||ui.tab==="records"||ui.tab==="tchk") && ui.role!=="teacher") ui.tab="hw";
   if(ui.tab==="tchk") { const w=$(".tkwrap"), sl=w?w.scrollLeft:0, sy=window.scrollY; m.innerHTML = tchkView(); const w2=$(".tkwrap"); if(w2) w2.scrollLeft=sl; window.scrollTo(0,sy); return; }
@@ -1937,7 +1938,7 @@ async function boot(){
   const got=new Set();
   const mark=c=>{ got.add(c); if(!loaded && got.size>=COLS.length) loaded=true; };
   COLS.forEach(c => db.collection(c).onSnapshot(snap => { const o={}; snap.docs.forEach(x=>{ o[x.id]=x.data(); }); S[c]=o; mark(c); if(loaded) refresh(); }, err => { console.error(err); mark(c); if(loaded) refresh(); }));
-  setTimeout(()=>{ if(!loaded){ loaded=true; refresh(); } }, 6000);
+  const waitTick = setInterval(()=>{ if(loaded){ clearInterval(waitTick); return; } renderMain(); }, 3000);  // 서버 오류가 있으면 빈 화면 대신 이유를 보여 줘요
 }
 boot();
 })();

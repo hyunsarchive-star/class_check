@@ -242,7 +242,7 @@ export async function onRequest(context) {
       const marks = cols.map((_, i) => "?" + (i + 2)).join(",");
       const q = env.DB.prepare(
         `SELECT col, id, v, CASE WHEN col = 'pins' AND data IS NOT NULL THEN json_object('set', 1, 'setAt', json_extract(data, '$.setAt')) ELSE data END AS data ` +
-        `FROM docs WHERE v > ?1 AND col IN (${marks}) ORDER BY v LIMIT 1000`);
+        `FROM docs INDEXED BY docs_v WHERE v > ?1 AND col IN (${marks}) ORDER BY v LIMIT 1000`);
       const deadline = Date.now() + 20000;
       for (;;) {
         const seqRow = await env.DB.prepare("SELECT v FROM meta WHERE k = 'seq'").first();
@@ -259,7 +259,7 @@ export async function onRequest(context) {
           return json({ v: seq, more: false, docs: [] });
         }
         if (!wait || Date.now() > deadline) return json({ v: Math.max(seq, since), more: false, docs: [] });
-        await sleep(1500);
+        await sleep(2500);
       }
     }
 
