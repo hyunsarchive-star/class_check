@@ -126,6 +126,16 @@ textarea.inp{min-height:120px;resize:vertical}
 .seg input:checked+span{color:var(--accent);font-weight:700}
 .box{background:var(--bg);border-radius:12px;padding:14px;white-space:pre-wrap;overflow-wrap:anywhere}
 .photo{border-radius:12px;max-width:100%;display:block;border:1px solid var(--line)}
+.sheet img.photo{cursor:zoom-in}
+.phzoomhint{font-size:12px;color:var(--muted);margin-top:-8px}
+.bigov.phbig{background:#0B0D12;padding:0;gap:0;overflow:hidden}
+.bigov.phbig .bighead{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:2}
+.bigov.phbig .x{background:rgba(255,255,255,.16);color:#fff;width:44px;height:44px;font-size:22px}
+.phstage{flex:1;min-height:0;overflow:auto;display:grid;place-items:center;cursor:zoom-in}
+.phstage img{max-width:100vw;max-height:100vh;object-fit:contain;display:block}
+.phstage.zoom{cursor:zoom-out;place-items:start}
+.phstage.zoom img{max-width:none;max-height:none;width:auto}
+.phcap{position:absolute;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom,0px));text-align:center;color:rgba(255,255,255,.9);font-size:13px;pointer-events:none;text-shadow:0 1px 3px #000}
 .feedback{border-left:4px solid var(--st-done);padding:10px 14px;background:var(--bg);border-radius:0 12px 12px 0;white-space:pre-wrap}
 .stamps{display:flex;gap:6px;flex-wrap:wrap}
 .okgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
@@ -526,6 +536,8 @@ span.rchip{cursor:default}
 .lkdate{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;letter-spacing:.2px}
 .lkname{font-size:14px;font-weight:500;opacity:.9;word-break:keep-all;line-height:1.35}
 .lkcount{font-size:11px;opacity:.75}
+.lkcard.lk-off{opacity:.62;outline:2px dashed var(--line);outline-offset:-2px;padding-top:32px}
+.lkvis{position:absolute;top:6px;left:8px;font-size:11px;font-weight:700;background:var(--surface);color:var(--ink);border-radius:999px;padding:2px 8px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .lknew{position:absolute;top:-8px;right:-6px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .lklinks{display:flex;flex-direction:column;gap:8px}
 .lklink{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);text-decoration:none}
@@ -656,6 +668,8 @@ const kindOf = e => (e && e.kind) || "perf";
 const EXW = s => ui.tab==="unit" ? String(s).replace(/수행평가/g,"단원평가") : s;
 const exams = () => Object.values(S.exams).filter(e=>kindOf(e)===exKind()).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
 const subOf = (aid,no) => S.submissions[`${aid}__${no}`];
+/* 공유보드: 한 학생이 포스트잇을 여러 장 붙일 수 있어요 (추가 장은 aid__x...__번호) */
+const extraPosts = aid => Object.entries(S.submissions||{}).filter(([k,v])=>v && v.extra && v.aid===aid && v.status==="submitted").map(([k,v])=>({k,sub:v}));
 const statusOf = (aid,no) => { const s = subOf(aid,no); return !s ? "wait" : s.status === "checked" ? "done" : s.status === "returned" ? "back" : "sent"; };
 const OK_STAMPS = ["최고!👍🏻✨","고생했어요🍀","다음엔 조금 더 자세히📝"];
 const ST = { wait:{t:"미제출",c:"s-wait"}, sent:{t:"제출함 · 확인 전",c:"s-sent"}, done:{t:"확인 완료",c:"s-done"}, back:{t:"반려 · 다시 제출 대기",c:"s-wait"} };
@@ -1031,7 +1045,7 @@ function weekOverview(){
       return { t, cols: days.map(d=>({ inst: ins.find(i=>i.period===ymd(d))||null, head:`${WDN[d.getDay()]}<small>${d.getMonth()+1}/${d.getDate()}</small>${isHoliday(ymd(d))?`<small class="holitag">${esc(holiName(ymd(d)))}</small>`:""}`, today: ymd(d)===ymd(today0()), holi:isHoliday(ymd(d)) })) }; }
     const inst = instancesOf(t).find(i=>i.period===wk)||null;
     return { t, inst, cols:[{ inst, head: inst?`마감<small>${md(inst.due)}</small>`:`<small>회차 없음</small>`, today:false }] };
-  });
+  }).filter(g => g.t.type==="daily" || g.inst);   // 이번 주에 회차가 없는 매주 할 일은 숨겨요
   const isD = t => t.type==="daily";
   const txt = (t,c) => isD(t) ? CELL_D[c][0] : ({done:"O",full:"만점",fine:"벌금",pass:"면제",late:"X",wait:"",abs:"결석",holi:"휴일"})[c];
   const cls = c => ({done:"c-done",full:"c-full",fine:"c-fine",pass:"c-pass",late:"c-late",wait:"c-wait",holi:"c-holi",abs:"c-abs"})[c];
@@ -1158,7 +1172,7 @@ function seenAt(no,key){ const v=(S.seen||{})[String(no)]?.[key]; const floor=Da
 const after = (x,t) => x && x.createdAt && new Date(x.createdAt).getTime() > t;
 function newCounts(no){
   const tl=seenAt(no,"links"), tt=seenAt(no,"todo");
-  const links = Object.values(S.links||{}).filter(l=>after(l,tl)).length;
+  const links = Object.values(S.links||{}).filter(l=>lkVisible(l) && after({createdAt:lkStamp(l)},tl)).length;
   const todo = Object.values(S.todos||{}).filter(t=>!t.endedAt && after(t,tt)).length + myDms(no).filter(m=>after(m,tt) && !dmDoneOf(m.id,no)).length;
   return {links,todo};
 }
@@ -1166,22 +1180,32 @@ const seenBusy = {};
 /* NEW 표시: 확인하면 사라져요 */
 let tSeenSet = new Set(); try{ tSeenSet = new Set(JSON.parse(localStorage.getItem("tSeen")||"[]")); }catch(e){}
 function markTSeen(id){ if(tSeenSet.has(id)) return; tSeenSet.add(id); try{ localStorage.setItem("tSeen", JSON.stringify([...tSeenSet].slice(-300))); }catch(e){} }
-function newFor(x,key){ if(!isNew(x)) return false;
+function newFor(x,key){ if(!isNew(key==="links"?{createdAt:lkStamp(x)}:x)) return false;
   if(ui.role==="teacher") return !tSeenSet.has(x.id);
   const no=+ui.me; if(key==="links") return !(S.seen||{})[String(no)]?.open?.[x.id];
   const since = (ui.prevSeen&&ui.prevSeen[key]!==undefined) ? ui.prevSeen[key] : seenAt(no,key);
   return new Date(x.createdAt).getTime() > since; }
 async function markSeen(no,key){ if(seenBusy[key] || peeking()) return; seenBusy[key]=true; ui.prevSeen=ui.prevSeen||{}; if(ui.prevSeen[key]===undefined) ui.prevSeen[key]=seenAt(no,key); const id=String(no); const cur=(S.seen||{})[id];
   const at=new Date().toISOString(); let ok=false; try{ ok = cur ? await patch("seen",id,{[key]:at}) : await put("seen",id,{no,[key]:at}); } finally { seenBusy[key]=!ok; } }
+/* 예약 공개 시간이 되면 화면을 새로 그려요 */
+const lkShown = new Set();
+setInterval(()=>{ try{ const now=Date.now(); let due=false; Object.values(S.links||{}).forEach(l=>{ if(l.vis==="at" && l.openAt && now>=new Date(l.openAt).getTime() && !lkShown.has(l.id+l.openAt)){ lkShown.add(l.id+l.openAt); due=true; } }); if(due) refresh(); }catch(e){} }, 30000);
+document.addEventListener("change", e=>{ if(e.target && e.target.name==="lkVis"){ const w=document.getElementById("lkOpenWrap"); if(w) w.hidden = e.target.value!=="at"; } });
 /* 링크함/알림장 */
 const lkDate = s => { const d=parseD(s); return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}. (${WDN[d.getDay()]})`; };
-const linkList = () => Object.values(S.links||{}).sort((a,b)=>(b.date||"").localeCompare(a.date||"") || (b.createdAt||"").localeCompare(a.createdAt||""));
+/* 공개 예약: vis = "now"(바로) | "at"(정한 때) | "hide"(숨김) */
+const lkVisible = l => !l.vis || l.vis==="now" || (l.vis==="at" && l.openAt && Date.now() >= new Date(l.openAt).getTime());
+const lkStamp = l => l.vis==="at" && l.openAt ? l.openAt : (l.openedAt || l.createdAt);
+const fmtOpen = iso => { const d=new Date(iso); return `${d.getMonth()+1}/${d.getDate()}(${"일월화수목금토"[d.getDay()]}) ${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+const lkState = l => !l.vis || l.vis==="now" ? "open" : l.vis==="hide" ? "hide" : lkVisible(l) ? "open" : "wait";
+const linkListAll = () => Object.values(S.links||{}).sort((a,b)=>(b.date||"").localeCompare(a.date||"") || (b.createdAt||"").localeCompare(a.createdAt||""));
+const linkList = () => linkListAll().filter(l => ui.role==="teacher" || lkVisible(l));
 function parseLinks(txt){ return String(txt||"").split(/\n/).map(l=>l.trim()).filter(Boolean).map(l=>{ const m=l.split(/\s*\|\s*/); const url=safeUrl(m.length>1?m.slice(1).join("|"):m[0]); return url?{label:m.length>1?m[0]:"",url}:null; }).filter(Boolean); }
 function linksView(){
   const T = ui.role==="teacher"; const list = linkList();
   const head = `<div class="ahead"><div><h2>링크함/알림장</h2><p class="muted" style="margin:4px 0 0">${T?"올린 글과 링크는 학생 화면에 바로 나타나요. 링크 없이 알림장 글만 올려도 돼요.":"선생님이 올린 알림장과 수업 링크예요. 눌러서 확인해 보세요."}</p></div>${T?`<button class="btn primary" data-act="newLink">＋ 글·링크 올리기</button>`:""}</div>`;
   if(!list.length) return `<section class="panel">${head}<div class="empty"><h3>아직 올라온 글이 없어요</h3><p>${T?"알림장이나 수업에 쓸 링크를 올리면 학생들에게 카드로 보여요.":"선생님이 글을 올리면 여기에 나타나요."}</p>${T?`<button class="btn primary" data-act="newLink">첫 글 올리기</button>`:""}</div></section>`;
-  return `<section class="panel">${head}<div class="lkgrid">${list.map(l=>`<button class="lkcard ${(l.items||[]).length?"lk-link":"lk-note"}" data-act="openLink" data-id="${l.id}">${newFor(l,"links")?`<span class="newtag lknew">NEW</span>`:""}<span class="lkdate">${lkDate(l.date)}</span><span class="lkname">${esc(l.title)}</span>${(l.items||[]).length>1?`<span class="lkcount">링크 ${(l.items||[]).length}개</span>`:!(l.items||[]).length?`<span class="lkcount">📝 알림장</span>`:""}</button>`).join("")}</div></section>`;
+  return `<section class="panel">${head}<div class="lkgrid">${list.map(l=>`<button class="lkcard ${(l.items||[]).length?"lk-link":"lk-note"}${T&&lkState(l)!=="open"?" lk-off":""}" data-act="openLink" data-id="${l.id}">${T&&lkState(l)==="hide"?`<span class="lkvis">🔒 숨김</span>`:T&&lkState(l)==="wait"?`<span class="lkvis">⏰ ${fmtOpen(l.openAt)} 공개</span>`:newFor(l,"links")?`<span class="newtag lknew">NEW</span>`:""}<span class="lkdate">${lkDate(l.date)}</span><span class="lkname">${esc(l.title)}</span>${(l.items||[]).length>1?`<span class="lkcount">링크 ${(l.items||[]).length}개</span>`:!(l.items||[]).length?`<span class="lkcount">📝 알림장</span>`:""}</button>`).join("")}</div></section>`;
 }
 /* 개별 알림 */
 const dmList = () => Object.values(S.dms||{}).sort((a,b)=>(b.date||"").localeCompare(a.date||"") || (b.createdAt||"").localeCompare(a.createdAt||""));
@@ -1319,24 +1343,26 @@ function boardView(){
   if(ui.board && (!S.assignments[ui.board] || !boards.some(b=>b.id===ui.board))) ui.board=null;
   if(!ui.board && boards.length) ui.board = boards[0].id;
   const T = ui.role==="teacher";
-  const chips = (boardsAll.length?subjBar(boardsAll,"bdSubj"):"") + `<div class="chips">${boards.map(b=>{ const n=students().filter(st=>["sent","done"].includes(statusOf(b.id,st.no))).length; return `<button class="chip" aria-pressed="${b.id===ui.board}" data-act="selB" data-id="${b.id}" style="${b.subject?`border-left:5px solid ${sjColor(b.subject)}`:""}"><b>${sjTag(b)}${esc(b.title)}</b><span>포스트잇 ${n}장</span></button>`; }).join("")}${T?`<button class="chip add" data-act="newB">＋ 새 보드</button>`:""}</div>`;
+  const chips = (boardsAll.length?subjBar(boardsAll,"bdSubj"):"") + `<div class="chips">${boards.map(b=>{ const n=students().filter(st=>["sent","done"].includes(statusOf(b.id,st.no))).length + extraPosts(b.id).filter(x=>S.students[x.sub.no]).length; return `<button class="chip" aria-pressed="${b.id===ui.board}" data-act="selB" data-id="${b.id}" style="${b.subject?`border-left:5px solid ${sjColor(b.subject)}`:""}"><b>${sjTag(b)}${esc(b.title)}</b><span>포스트잇 ${n}장</span></button>`; }).join("")}${T?`<button class="chip add" data-act="newB">＋ 새 보드</button>`:""}</div>`;
   if(!boards.length && boardsAll.length) return chips + `<section class="panel empty"><h3>${esc(ui.bdSubj)} 보드가 없어요</h3>${T?`<button class="btn primary" data-act="newB">＋ ${esc(ui.bdSubj)} 보드 만들기</button>`:""}</section>`;
   if(!boards.length) return chips + `<section class="panel empty"><h3>아직 공유보드가 없어요</h3><p>${T?"보드를 만들면 아이들이 사진이나 글을 포스트잇처럼 붙이고, 모두가 한눈에 볼 수 있어요.":"선생님이 보드를 만들면 여기에 나타나요."}</p>${T?`<button class="btn primary" data-act="newB">첫 보드 만들기</button>`:""}</section>`;
   const a=S.assignments[ui.board];
-  const posts = students().map(st=>({st, sub:subOf(a.id,st.no), k:`${a.id}__${st.no}`})).filter(x=>x.sub && (x.sub.status==="submitted"||x.sub.status==="checked")).sort((x,y)=>(x.sub.submittedAt||"").localeCompare(y.sub.submittedAt||""));
+  const posts = students().map(st=>({st, sub:subOf(a.id,st.no), k:`${a.id}__${st.no}`})).filter(x=>x.sub && (x.sub.status==="submitted"||x.sub.status==="checked"))
+    .concat(extraPosts(a.id).map(x=>({st:S.students[x.sub.no], sub:x.sub, k:x.k})).filter(x=>x.st))
+    .sort((x,y)=>(x.sub.submittedAt||"").localeCompare(y.sub.submittedAt||""));
   const key = T ? "t" : "s"+ui.me;
   const mineDone = !T && posts.some(x=>String(x.st.no)===String(ui.me));
-  const n = posts.length; const pw = n<=6?230: n<=12?190: n<=20?165: n<=30?145:130;
+  const n = posts.length; const nStu = new Set(posts.map(x=>x.st.no)).size; const myMain = !T && !!subOf(a.id,+ui.me) && ["submitted","checked"].includes(subOf(a.id,+ui.me).status); const pw = n<=6?230: n<=12?190: n<=20?165: n<=30?145:130;
   const cards = posts.map(({st,sub,k})=>{ const h=sub.hearts||{}; const hn=Object.values(h).filter(Boolean).length; const mine = !T && String(st.no)===String(ui.me); const rot=(((st.no*37)%5)-2)*0.7;
     return `<article class="note${mine?" mine":""}${sub.hasPhoto||(sub.link&&ytId(sub.link))?" has-ph":""}" style="background:var(--pad-${st.no%6});--r:${rot}deg">
-      <button class="note-open" data-act="openPost" data-no="${st.no}" aria-label="${st.no}번 ${esc(st.name)} 포스트잇 크게 보기"></button>
+      <button class="note-open" data-act="openPost" data-no="${st.no}" data-k="${k}" aria-label="${st.no}번 ${esc(st.name)} 포스트잇 크게 보기"></button>
       <div class="who"><span class="n">${st.no}</span><span class="nm">${esc(st.name)}</span>${sub.status==="checked"&&sub.stamp?`<span class="stamp-mini" title="${esc(sub.stamp)}">${esc([...sub.stamp].slice(-2).join(""))}</span>`:""}</div>
       ${sub.title?`<div class="ntitle">${esc(sub.title)}</div>`:""}
       ${sub.hasPhoto?`<div class="ph-box"><div class="ph-wait" data-photo="${k}">사진…</div></div>`:""}${sub.link?`<div class="nlink">${linkCard(sub.link,!sub.hasPhoto)}</div>`:""}${sub.text?`<div class="txt">${esc(sub.text)}</div>`:""}
       <div class="foot"><button class="heart" data-act="heart" data-id="${k}" aria-pressed="${!!h[key]}" aria-label="좋아요">${h[key]?"❤️":"🤍"} ${hn}</button></div></article>`; }).join("");
   const missing = students().filter(st=>!posts.some(x=>x.st.no===st.no));
-  return chips + `<section class="panel"><div class="boardhead"><div style="min-width:0"><h2>${sjTag(a)}${esc(a.title)}</h2><div class="meta"><span>${n}/${students().length}명 붙임</span>${a.due?`<span>마감 ${fmtDate(a.due)}</span>`:""}<span>포스트잇을 누르면 크게 볼 수 있어요</span></div>${a.desc?`<p class="desc">${esc(a.desc)}</p>`:""}</div>
-    <div class="actions">${!T && statusOf(a.id,+ui.me)!=="done" ? `<button class="btn primary" data-act="openMy" data-id="${a.id}">${mineDone?"내 포스트잇 고치기":"＋ 나도 붙이기"}</button>`:""}${T?`<button class="btn" data-act="editB" data-id="${a.id}">보드 수정</button>`:""}</div></div>
+  return chips + `<section class="panel"><div class="boardhead"><div style="min-width:0"><h2>${sjTag(a)}${esc(a.title)}</h2><div class="meta"><span>${nStu}/${students().length}명 붙임${n>nStu?` · 포스트잇 ${n}장`:""}</span>${a.due?`<span>마감 ${fmtDate(a.due)}</span>`:""}<span>포스트잇을 누르면 크게 볼 수 있어요</span></div>${a.desc?`<p class="desc">${esc(a.desc)}</p>`:""}</div>
+    <div class="actions">${!T && statusOf(a.id,+ui.me)!=="done" ? `<button class="btn ${myMain?"":"primary"}" data-act="openMy" data-id="${a.id}">${myMain?"첫 포스트잇 고치기":"＋ 나도 붙이기"}</button>`:""}${!T && myMain && !a.closed ? `<button class="btn primary" data-act="openMyMore" data-id="${a.id}">＋ 하나 더 붙이기</button>`:""}${T?`<button class="btn" data-act="editB" data-id="${a.id}">보드 수정</button>`:""}</div></div>
     ${n? `<div class="wall" style="--pw:${pw}px">${cards}</div>` : `<div class="empty"><h3>아직 붙은 포스트잇이 없어요</h3><p>누군가 올리면 여기에 바로 나타나요.</p></div>`}
     ${T && missing.length && n ? `<p class="muted" style="margin:0">아직 안 붙인 친구: ${missing.map(st=>`${st.no} ${esc(st.name)}`).join(", ")}</p>`:""}</section>`;
 }
@@ -1503,14 +1529,18 @@ function renderSheet(){
       <label class="f" for="lkU">링크 (선택 · 한 줄에 하나씩)<textarea class="inp" id="lkU" placeholder="https://youtu.be/...&#10;활동지 | https://docs.google.com/...">${esc((l.items||[]).map(it=>it.label?`${it.label} | ${it.url}`:it.url).join("\n"))}</textarea></label>
       <span class="muted" style="font-size:12px;margin-top:-6px">링크 앞에 "이름 |"을 붙이면 학생 화면에 그 이름으로 보여요. 예: 활동지 | https://...</span>
       <label class="f" for="lkN">내용 · 알림장 (선택)<textarea class="inp" id="lkN" style="min-height:110px" placeholder="예: 1. 내일 준비물: 색연필&#10;2. 영상을 보고 활동지 2번까지 풀어 오세요.">${esc(l.note||"")}</textarea></label>
-      <button class="btn primary" type="submit">${s.id?"저장":"보내기"}</button>
+      <fieldset class="f lkvisf" style="border:none;padding:0;margin:0"><legend style="font-size:13px;color:var(--muted);font-weight:500;margin-bottom:6px">학생에게 공개</legend>
+        <div class="seg">${[["now","바로 공개"],["at","날짜·시간 정해서 공개"],["hide","숨겨 두기 (내가 공개할 때까지)"]].map(([v,t])=>`<label><input type="radio" name="lkVis" value="${v}" ${(l.vis||"now")===v?"checked":""}><span>${t}</span></label>`).join("")}</div>
+        <label class="f" for="lkOpen" style="margin-top:8px" ${(l.vis||"now")==="at"?"":"hidden"} id="lkOpenWrap">공개할 때<input class="inp" type="datetime-local" id="lkOpen" value="${esc(l.openAt?(()=>{const d=new Date(l.openAt); return ymd(d)+"T"+pad2(d.getHours())+":"+pad2(d.getMinutes());})():ymd(addDays(today0(),1))+"T08:30")}"></label></fieldset>
+      <button class="btn primary" type="submit">${s.id?"저장":"올리기"}</button>
       ${s.id ? (ui.confirm==="delLink" ? `<div class="confirm"><span>이 글을 지울까요? 학생 화면에서도 사라져요.</span><button class="btn ghost" type="button" data-act="cancelDelLink">취소</button><button class="btn warn" type="button" data-act="delLink" data-id="${s.id}">지우기</button></div>` : `<button class="btn ghost" type="button" data-act="askDelLink">이 글 삭제</button>`) : ""}</form>`; }
   if(s.type==="linkview"){ const l=S.links[s.id]; if(!l){ closeSheet(); return; }
     body = `<div class="sheet-h"><div><div class="lkdate" style="font-size:14px">${lkDate(l.date)}</div><h2>${esc(l.title)}</h2></div><button class="x" data-act="close" aria-label="닫기">×</button></div>
     ${l.note?`<div class="box" style="white-space:pre-wrap">${esc(l.note)}</div>`:""}
     <div class="lklinks">${(l.items||[]).map((it,k)=>{ const id=ytId(it.url); let host=""; try{ host=new URL(it.url).hostname.replace(/^www\./,""); }catch(e){}
       return `<a class="lklink" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer"><span class="lkic">${id?"▶":"🔗"}</span><span class="lktx"><b>${esc(it.label||(id?"YouTube 영상":host)||"링크 "+(k+1))}</b><span>${esc(it.url)}</span></span><span class="lkgo">열기 ↗</span></a>`; }).join("")}</div>
-    <div class="actions"><button class="btn" data-act="linkBig" data-id="${l.id}">⛶ 크게 보기</button>${ui.role==="teacher"?`<button class="btn" data-act="editLink" data-id="${l.id}">수정</button>`:""}</div>`; }
+    ${ui.role==="teacher"&&lkState(l)!=="open"?`<div class="confirm"><span>${lkState(l)==="hide"?"🔒 지금은 학생에게 숨겨져 있어요.":`⏰ ${fmtOpen(l.openAt)}에 학생에게 공개돼요.`}</span><button class="btn ok" type="button" data-act="lkOpenNow" data-id="${l.id}">지금 공개하기</button></div>`:""}
+    <div class="actions"><button class="btn" data-act="linkBig" data-id="${l.id}">⛶ 크게 보기</button>${ui.role==="teacher"?`<button class="btn" data-act="editLink" data-id="${l.id}">수정</button>${lkState(l)==="open"?`<button class="btn ghost" data-act="lkHide" data-id="${l.id}">🔒 다시 숨기기</button>`:""}`:""}</div>`; }
   if(s.type==="todo"){ const td = s.id ? S.todos[s.id] : {type:"once", weekday:5, cat:TD_CATS[0]}; const ty=td.type||"weekly";
     body = `<div class="sheet-h"><h2>${s.id?"할 일 수정":"할 일 보내기"}</h2><button class="x" data-act="close" aria-label="닫기">×</button></div>
     <form id="fTodo" class="list"><div class="f" style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:500">종류<div class="subjpick">${TD_CATS.map(c=>`<label style="--sc:${tdColor(c)}"><input type="radio" name="tdCat" value="${c}" ${td.cat===c?"checked":""} required><span>${c}</span></label>`).join("")}</div></div>
@@ -1534,7 +1564,7 @@ function renderSheet(){
     <label class="f" for="iqP">한 사람당 답 개수<select class="inp" id="iqP">${[1,2,3,4,5].map(n=>`<option value="${n}" ${(q.per||3)===n?"selected":""}>${n}개</option>`).join("")}</select></label>
     <button class="btn primary" type="submit">${s.id?"저장":"질문 내기"}</button>
     ${s.id ? (ui.confirm==="delIdea" ? `<div class="confirm"><span>이 질문과 모인 답을 모두 지울까요?</span><button class="btn ghost" type="button" data-act="cancelDelIdea">취소</button><button class="btn warn" type="button" data-act="delIdea" data-id="${s.id}">지우기</button></div>` : `<button class="btn ghost" type="button" data-act="askDelIdea">이 질문 삭제</button>`) : ""}</form>`; }
-  if(s.type==="post"){ const a=S.assignments[s.aid]; const st=S.students[s.no]; const k=`${s.aid}__${s.no}`; const sub=S.submissions[k]; if(!a||!sub){ closeSheet(); return; }
+  if(s.type==="post"){ const a=S.assignments[s.aid]; const st=S.students[s.no]; const k=s.k||`${s.aid}__${s.no}`; const sub=S.submissions[k]; if(!a||!sub){ closeSheet(); return; }
     const h=sub.hearts||{}; const key = ui.role==="teacher" ? "t" : "s"+ui.me; const hn=Object.values(h).filter(Boolean).length;
     body = `<div class="sheet-h"><div><h2>${s.no}번 ${esc(st?.name||"")}</h2><div class="meta"><span>${esc(a.title)}</span><span>${fmt(sub.submittedAt)}</span></div></div><button class="x" data-act="close" aria-label="닫기">×</button></div>
     ${ui.postEdit ? `<form id="fPostEdit" class="list">
@@ -1554,7 +1584,15 @@ function renderSheet(){
       <div class="okgrid">${OK_STAMPS.map(t=>`<button class="okbtn" data-act="okStamp" data-aid="${s.aid}" data-no="${s.no}" data-t="${esc(t)}" aria-pressed="${sub.status==="checked"&&sub.stamp===t}">${esc(t)}<small>확인 도장</small></button>`).join("")}</div>
       <div class="actions"><button class="btn warn" data-act="returnSub" data-aid="${s.aid}" data-no="${s.no}">↩ 보드에서 내리고 다시 받기</button></div>`:""}`;
   }
-  if(s.type==="my"){ const a=S.assignments[s.id]; const me=S.students[ui.me]; if(!a||!me){ closeSheet(); return; } const sub=subOf(a.id,me.no); const stt=statusOf(a.id,me.no); const locked = stt==="done" || !!a.closed;
+  if(s.type==="my" && s.extra){ const a=S.assignments[s.id]; const me=S.students[ui.me]; if(!a||!me){ closeSheet(); return; }
+    body = `<div class="sheet-h"><div><h2>${esc(a.title)}</h2><div class="meta"><span>포스트잇 한 장 더 붙이기</span></div></div><button class="x" data-act="close" aria-label="닫기">×</button></div>
+    ${a.closed?`<p class="muted">마감된 보드라 더 붙일 수 없어요.</p>`:`<form id="fSubMore" class="list"><label class="f" for="tTi">제목<input class="inp" id="tTi" maxlength="40" placeholder="예: 두 번째 사진"></label>
+      ${a.kind!=="text"?`<label class="f" for="pF">사진 (선택)<input class="inp" id="pF" type="file" accept="image/*"></label><img id="pPrev" class="photo" hidden alt="고른 사진 미리보기">`:""}
+      ${a.kind!=="photo"?`<label class="f" for="tF">글 (선택)<textarea class="inp" id="tF" placeholder="여기에 써요."></textarea></label>`:""}
+      <label class="f" for="lF">링크 (선택)<input class="inp" id="lF" type="text" inputmode="url" placeholder="유튜브나 웹페이지 주소를 붙여 넣어요"></label>
+      <button class="btn primary" type="submit" id="subBtn">붙이기</button></form>`}`;
+  }
+  else if(s.type==="my"){ const a=S.assignments[s.id]; const me=S.students[ui.me]; if(!a||!me){ closeSheet(); return; } const sub=subOf(a.id,me.no); const stt=statusOf(a.id,me.no); const locked = stt==="done" || !!a.closed;
     body = `<div class="sheet-h"><div><h2>${esc(a.title)}</h2><div class="meta">${a.due?`<span>마감 ${fmtDate(a.due)}</span>`:""}<span class="status ${ST[stt].c}">${ST_STUDENT[stt].t}</span></div></div><button class="x" data-act="close" aria-label="닫기">×</button></div>
     ${a.desc?`<div class="box">${esc(a.desc)}</div>`:""}
     ${a.share==="board"?`<div class="confirm"><span>🧩 제출하면 공유보드에 포스트잇으로 붙어요.</span><button class="btn" type="button" data-act="openBoard" data-id="${a.id}">보드 보기</button></div>`:""}
@@ -1569,11 +1607,22 @@ function renderSheet(){
   if(s.type==="exam") body = EXW(body);
   r.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true">${body}</div></div>`;
   const ph = r.querySelector("#phHolder");
-  if(ph){ const sid = s.type==="post" ? `${s.aid}__${s.no}` : s.type==="sub" ? `${ui.selA}__${s.no}` : `${s.id}__${ui.me}`; getPhoto(sid).then(src=>{ if(!ph.isConnected) return; ph.outerHTML = src ? `<img class="photo" src="${src}" alt="제출한 사진">` : `<div class="muted">사진을 불러오지 못했어요.</div>`; }); }
+  if(ph){ const sid = s.type==="post" ? (s.k||`${s.aid}__${s.no}`) : s.type==="sub" ? `${ui.selA}__${s.no}` : `${s.id}__${ui.me}`; getPhoto(sid).then(src=>{ if(!ph.isConnected) return; ph.outerHTML = src ? `<img class="photo" src="${src}" alt="제출한 사진" title="누르면 전체 화면으로 크게 볼 수 있어요"><div class="phzoomhint">🔍 사진을 누르면 전체 화면으로 크게 볼 수 있어요</div>` : `<div class="muted">사진을 불러오지 못했어요.</div>`; }); }
   const pf = r.querySelector("#pF");
   if(pf) pf.addEventListener("change", async ()=>{ const f=pf.files[0]; const img=r.querySelector("#pPrev"); if(!f){img.hidden=true;return;} try{ pf._src = await compress(f); img.src=pf._src; img.hidden=false; }catch(e){ toast("사진을 읽지 못했어요. 다른 사진을 골라 주세요."); pf.value=""; } });
 }
 
+/* 사진 크게 보기 (전체 화면) */
+function openPhotoBig(src, cap){ const r=$("#bigRoot"); if(!r||!src) return;
+  r.innerHTML = `<div class="bigov phbig" role="dialog" aria-label="사진 크게 보기"><div class="bighead"><button class="x" data-act="ideaBigClose" aria-label="닫기">×</button></div>
+    <div class="phstage" id="phStage" title="누르면 원래 크기로 확대/축소"><img src="${src}" alt="${esc(cap||"올린 사진")}"></div>${cap?`<div class="phcap">${esc(cap)} · 사진을 누르면 확대돼요</div>`:`<div class="phcap">사진을 누르면 확대돼요</div>`}</div>`;
+  try{ r.firstChild.requestFullscreen?.().catch(()=>{}); }catch(e){} }
+document.addEventListener("click", e=>{
+  const st = e.target.closest && e.target.closest("#phStage");
+  if(st){ const zoomed = st.classList.toggle("zoom"); if(zoomed){ const im=st.querySelector("img"); const rx=(e.offsetX||0)/(im.clientWidth||1), ry=(e.offsetY||0)/(im.clientHeight||1); requestAnimationFrame(()=>{ st.scrollLeft = Math.max(0, im.scrollWidth*rx - st.clientWidth/2); st.scrollTop = Math.max(0, im.scrollHeight*ry - st.clientHeight/2); }); } return; }
+  const im = e.target.closest && e.target.closest(".sheet img.photo");
+  if(im && !im.closest("form")){ const h=$(".sheet .sheet-h h2"); openPhotoBig(im.src, h ? h.textContent.trim() : ""); }
+});
 /* image compress to fit a 256 KiB document */
 function compress(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onerror=rej; fr.onload=()=>{ const im=new Image(); im.onerror=rej; im.onload=()=>{ let max=1280, q=.8, out=""; for(let i=0;i<8;i++){ const k=Math.min(1,max/Math.max(im.width,im.height)); const c=document.createElement("canvas"); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); out=c.toDataURL("image/jpeg",q); if(out.length<200000) break; if(q>.5) q-=.1; else max=Math.round(max*.8); } res(out); }; im.src=fr.result; }; fr.readAsDataURL(file); }); }
 
@@ -1682,6 +1731,8 @@ document.addEventListener("click", async ev => {
     case "ideaWho": ui.ideaWho=!ui.ideaWho; renderMain(); break;
     case "ideaBig": openBig(); break;
     case "linkBig": openLinkBig(id); break;
+    case "lkOpenNow": if(await patch("links",id,{vis:"now",openAt:null,openedAt:new Date().toISOString()})){ renderSheet(); renderMain(); toast("학생들에게 공개했어요."); } break;
+    case "lkHide": if(await patch("links",id,{vis:"hide"})){ renderSheet(); renderMain(); toast("학생 화면에서 숨겼어요."); } break;
     case "lkFont": { ui.lkScale=Math.min(2.5,Math.max(0.5,(ui.lkScale||1)*(+t.dataset.d>0?1.15:1/1.15))); const b=$("#lkBigBody"); if(b) b.style.fontSize=((ui.lkBase||40)*ui.lkScale)+"px"; break; }
     case "hwBig": ui.bigHw=id; renderHwBig(); try{ $("#bigRoot").firstChild.requestFullscreen?.().catch(()=>{}); }catch(e){} break;
     case "hwBigClose": ui.bigHw=null; $("#bigRoot").innerHTML=""; try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){} break;
@@ -1715,7 +1766,8 @@ document.addEventListener("click", async ev => {
     case "editB": ui.confirm=null; openSheet({type:"assign",id}); break;
     case "askDelB": ui.confirm="delB"; renderSheet(); break;
     case "cancelDelB": ui.confirm=null; renderSheet(); break;
-    case "openPost": ui.postEdit=false; ui.confirm=null; openSheet({type:"post",aid:ui.board,no}); break;
+    case "openPost": ui.postEdit=false; ui.confirm=null; openSheet({type:"post",aid:ui.board,no,k:t.dataset.k}); break;
+    case "openMyMore": openSheet({type:"my",id,extra:true}); break;
     case "postEditOn": ui.postEdit=true; ui.confirm=null; renderSheet(); break;
     case "postEditOff": ui.postEdit=false; renderSheet(); break;
     case "askDelPost": ui.confirm="delPost"; renderSheet(); break;
@@ -1775,7 +1827,7 @@ document.addEventListener("submit", async ev => {
     const sid=ui.sheet.id;
     if(sid){ if(await patch("exams",sid,{subject,unit,title:unit,max,date,cut})){ closeSheet(); toast("저장했어요."); } }
     else { const id=uid(); if(await put("exams",id,{id,kind:exKind(),subject,unit,title:unit,max,date,cut,scores:{},comments:{},createdAt:new Date().toISOString()})){ ui.subj=subject; closeSheet(); renderMain(); toast(`${subject} 수행평가를 추가했어요.`); } } }
-  if(f.id==="fPostEdit"){ const s=ui.sheet; const k=`${s.aid}__${s.no}`; const sub=S.submissions[k]; if(!sub) return;
+  if(f.id==="fPostEdit"){ const s=ui.sheet; const k=s.k||`${s.aid}__${s.no}`; const sub=S.submissions[k]; if(!sub) return;
     const text=$("#peT").value.trim(); const title=$("#peTi").value.trim(); const linkRaw=$("#peL").value.trim(); const link=safeUrl(linkRaw); if(linkRaw && !link){ toast("링크 주소를 다시 확인해 주세요."); return; } const src=$("#pF")?._src||null; const dropPh = $("#peDel")?.checked && !src;
     const hasPhoto = src ? true : dropPh ? false : !!sub.hasPhoto;
     if(!text && !hasPhoto && !link){ toast("글, 사진, 링크 중 하나는 남겨 주세요. 없애려면 삭제를 눌러요."); return; }
@@ -1823,9 +1875,12 @@ document.addEventListener("submit", async ev => {
     if(sid){ if(await patch("dms",sid,{date,title,note,to})){ ui.dmSel=null; closeSheet(); toast("알림을 고쳤어요."); } }
     else { const id=uid(); if(await put("dms",id,{id,date,title,note,to,createdAt:new Date().toISOString()})){ ui.dmSel=null; closeSheet(); renderMain(); toast(`${to.length}명에게 알림을 보냈어요.`); } } }
   if(f.id==="fLink"){ const sid=ui.sheet.id; const items=parseLinks($("#lkU").value); const title=$("#lkT").value.trim(), date=$("#lkD").value, note=$("#lkN").value.trim();
+    const vis=f.querySelector("input[name=lkVis]:checked")?.value||"now"; let openAt=null; if(vis==="at"){ const v=$("#lkOpen").value; if(!v){ toast("공개할 날짜와 시간을 골라 주세요."); return; } openAt=new Date(v).toISOString(); }
+    const prev = sid ? S.links[sid] : null; const visData = {vis, openAt}; if(vis==="now" && prev && lkState(prev)!=="open") visData.openedAt=new Date().toISOString();
     if(!title||!date) return; const rawN=$("#lkU").value.split(/\n/).map(x=>x.trim()).filter(Boolean).length; if(rawN>items.length){ toast("링크 주소를 다시 확인해 주세요. (https:// 로 시작해요)"); return; }
-    if(sid){ if(await patch("links",sid,{title,date,note,items})){ closeSheet(); toast("글을 고쳤어요."); } }
-    else { const id=uid(); if(await put("links",id,{id,title,date,note,items,createdAt:new Date().toISOString()})){ closeSheet(); renderMain(); toast("학생들에게 올렸어요."); } } }
+    const visMsg = vis==="hide" ? " (학생에게는 숨겨져 있어요)" : vis==="at" ? ` (${fmtOpen(openAt)}에 공개돼요)` : "";
+    if(sid){ if(await patch("links",sid,{title,date,note,items,...visData})){ closeSheet(); renderMain(); toast("글을 고쳤어요."+visMsg); } }
+    else { const id=uid(); if(await put("links",id,{id,title,date,note,items,...visData,createdAt:new Date().toISOString()})){ closeSheet(); renderMain(); toast(vis==="now"?"학생들에게 올렸어요.":"저장했어요."+visMsg); } } }
   if(f.id==="fTodo"){ const sid=ui.sheet.id; const type=f.querySelector("input[name=tdType]:checked").value;
     const data={ cat:f.querySelector("input[name=tdCat]:checked")?.value||TD_CATS[0], title:$("#tdT").value.trim(), desc:$("#tdD").value.trim(), type, weekday:+$("#tdW").value, weekends: !!$("#tdWE")?.checked, numOn: type==="weekly" && !!$("#tdNumOn")?.checked, numStart: +($("#tdNS")?.value||1), numUnit: $("#tdNU")?.value.trim()||"", start:(type==="daily"?$("#tdS2").value:$("#tdS").value)||ymd(today0()), due: type==="once" ? $("#tdDue").value : "" };
     if(!data.title) return; if(type==="once" && !data.due){ toast("마감일을 골라 주세요."); return; }
@@ -1845,6 +1900,15 @@ document.addEventListener("submit", async ev => {
   if(f.id==="fAddRow"){ const no=+$("#arNo").value, name=$("#arName").value.trim(); if(!no||!name) return; if(S.students[no]){ toast(`${no}번은 이미 ${S.students[no].name}(으)로 있어요.`); return; } if(await put("students",String(no),{no,name})){ toast(`${no}번 ${name}을(를) 등록했어요.`); renderMain(); setTimeout(()=>$("#arNo")?.focus(),0); } }
   if(f.id==="fBulk"){ const lines=$("#bulkT").value.split(/\n/).map(l=>l.trim()).filter(Boolean); let n=0, bad=[]; for(const l of lines){ const m=l.match(/^(\d+)\s*[.,번)]?\s*(.+)$/); if(!m){ bad.push(l); continue; } const no=+m[1], name=m[2].trim(); if(await put("students",String(no),{no,name})) n++; } ui.bulk = bad.length>0; renderMain(); toast(`${n}명을 등록했어요.${bad.length?` 형식이 맞지 않는 줄 ${bad.length}개는 건너뛰었어요.`:""}`); }
   if(f.id==="fStudent"){ const no=+$("#sN").value, name=$("#sM").value.trim(); if(!no||!name) return; if(!ui.sheet.no && S.students[no]){ toast(`${no}번은 이미 있어요.`); return; } if(await put("students",String(no),{no,name})){ closeSheet(); toast("명단을 저장했어요."); } }
+  if(f.id==="fSubMore"){ const a=S.assignments[ui.sheet.id]; const me=+ui.me; if(!a) return; const pf=$("#pF"), tf=$("#tF"); const src=pf?._src||null; const text=tf?tf.value.trim():"";
+    const title=$("#tTi")?.value.trim()||""; const linkRaw=$("#lF")?.value.trim()||""; const link=safeUrl(linkRaw);
+    if(linkRaw && !link){ toast("링크 주소를 다시 확인해 주세요."); return; }
+    if(!src && !text && !link && !title){ toast("사진이나 글 중 하나는 넣어 주세요."); return; }
+    const btn=$("#subBtn"); btn.disabled=true; btn.textContent="붙이는 중…";
+    const k=`${a.id}__x${uid()}__${me}`;
+    if(src && !(await putPhoto(k,src))){ btn.disabled=false; btn.textContent="붙이기"; return; }
+    if(await put("submissions",k,{aid:a.id,no:me,extra:true,text,title,link,hasPhoto:!!src,status:"submitted",hearts:{},submittedAt:new Date().toISOString()})){ toast("포스트잇을 하나 더 붙였어요!"); closeSheet(); }
+    else { btn.disabled=false; btn.textContent="붙이기"; } }
   if(f.id==="fSub"){ const a=S.assignments[ui.sheet.id]; const me=+ui.me; const pf=$("#pF"), tf=$("#tF"); const src=pf?._src||null; const text=tf?tf.value.trim():"";
     const title=$("#tTi")?.value.trim()||""; const linkRaw=$("#lF")?.value.trim()||""; const link=safeUrl(linkRaw);
     if(linkRaw && !link){ toast("링크 주소를 다시 확인해 주세요."); return; }
