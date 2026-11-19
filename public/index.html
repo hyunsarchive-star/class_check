@@ -244,6 +244,8 @@ table.matrix{min-width:0;width:max-content;border-collapse:separate;border-spaci
 .note{position:relative;aspect-ratio:1/1;border-radius:4px 4px 14px 4px;padding:10px 11px;display:flex;flex-direction:column;gap:6px;color:var(--pad-ink);box-shadow:0 2px 0 rgba(0,0,0,.06),0 6px 14px rgba(28,34,48,.12);transform:rotate(var(--r));transition:transform .15s,box-shadow .15s;overflow:hidden;min-width:0}
 .note:hover{transform:rotate(0) scale(1.04);z-index:2;box-shadow:0 10px 26px rgba(28,34,48,.22)}
 .note.mine{outline:3px solid var(--accent);outline-offset:2px}
+.note.tnote{background:var(--surface);border:2px solid var(--accent);box-shadow:0 2px 0 rgba(0,0,0,.06),0 8px 18px rgba(44,79,168,.18)}
+.note.tnote .who .nm{color:var(--accent)}
 .note-open{position:absolute;inset:0;border:none;background:none;border-radius:inherit;z-index:1}
 .note .who{display:flex;align-items:center;gap:6px;font-weight:700;font-size:13px;min-width:0}
 .note .who .n{font-family:var(--f-display);font-size:18px;font-weight:400;opacity:.65}
@@ -669,6 +671,8 @@ const EXW = s => ui.tab==="unit" ? String(s).replace(/수행평가/g,"단원평�
 const exams = () => Object.values(S.exams).filter(e=>kindOf(e)===exKind()).sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
 const subOf = (aid,no) => S.submissions[`${aid}__${no}`];
 /* 공유보드: 한 학생이 포스트잇을 여러 장 붙일 수 있어요 (추가 장은 aid__x...__번호) */
+const T_ST = {no:0, name:"선생님", teacher:true};
+const postSt = no => +no===0 ? T_ST : S.students[no];
 const extraPosts = aid => Object.entries(S.submissions||{}).filter(([k,v])=>v && v.extra && v.aid===aid && v.status==="submitted").map(([k,v])=>({k,sub:v}));
 const statusOf = (aid,no) => { const s = subOf(aid,no); return !s ? "wait" : s.status === "checked" ? "done" : s.status === "returned" ? "back" : "sent"; };
 const OK_STAMPS = ["최고!👍🏻✨","고생했어요🍀","다음엔 조금 더 자세히📝"];
@@ -1344,26 +1348,26 @@ function boardView(){
   if(ui.board && (!S.assignments[ui.board] || !boards.some(b=>b.id===ui.board))) ui.board=null;
   if(!ui.board && boards.length) ui.board = boards[0].id;
   const T = ui.role==="teacher";
-  const chips = (boardsAll.length?subjBar(boardsAll,"bdSubj"):"") + `<div class="chips">${boards.map(b=>{ const n=students().filter(st=>["sent","done"].includes(statusOf(b.id,st.no))).length + extraPosts(b.id).filter(x=>S.students[x.sub.no]).length; return `<button class="chip" aria-pressed="${b.id===ui.board}" data-act="selB" data-id="${b.id}" style="${b.subject?`border-left:5px solid ${sjColor(b.subject)}`:""}"><b>${sjTag(b)}${esc(b.title)}</b><span>포스트잇 ${n}장</span></button>`; }).join("")}${T?`<button class="chip add" data-act="newB">＋ 새 보드</button>`:""}</div>`;
+  const chips = (boardsAll.length?subjBar(boardsAll,"bdSubj"):"") + `<div class="chips">${boards.map(b=>{ const n=students().filter(st=>["sent","done"].includes(statusOf(b.id,st.no))).length + extraPosts(b.id).filter(x=>postSt(x.sub.no)).length; return `<button class="chip" aria-pressed="${b.id===ui.board}" data-act="selB" data-id="${b.id}" style="${b.subject?`border-left:5px solid ${sjColor(b.subject)}`:""}"><b>${sjTag(b)}${esc(b.title)}</b><span>포스트잇 ${n}장</span></button>`; }).join("")}${T?`<button class="chip add" data-act="newB">＋ 새 보드</button>`:""}</div>`;
   if(!boards.length && boardsAll.length) return chips + `<section class="panel empty"><h3>${esc(ui.bdSubj)} 보드가 없어요</h3>${T?`<button class="btn primary" data-act="newB">＋ ${esc(ui.bdSubj)} 보드 만들기</button>`:""}</section>`;
   if(!boards.length) return chips + `<section class="panel empty"><h3>아직 공유보드가 없어요</h3><p>${T?"보드를 만들면 아이들이 사진이나 글을 포스트잇처럼 붙이고, 모두가 한눈에 볼 수 있어요.":"선생님이 보드를 만들면 여기에 나타나요."}</p>${T?`<button class="btn primary" data-act="newB">첫 보드 만들기</button>`:""}</section>`;
   const a=S.assignments[ui.board];
   const posts = students().map(st=>({st, sub:subOf(a.id,st.no), k:`${a.id}__${st.no}`})).filter(x=>x.sub && (x.sub.status==="submitted"||x.sub.status==="checked"))
-    .concat(extraPosts(a.id).map(x=>({st:S.students[x.sub.no], sub:x.sub, k:x.k})).filter(x=>x.st))
-    .sort((x,y)=>(x.sub.submittedAt||"").localeCompare(y.sub.submittedAt||""));
+    .concat(extraPosts(a.id).map(x=>({st:postSt(x.sub.no), sub:x.sub, k:x.k})).filter(x=>x.st))
+    .sort((x,y)=>((y.st.teacher?1:0)-(x.st.teacher?1:0)) || (x.sub.submittedAt||"").localeCompare(y.sub.submittedAt||""));   // 선생님 포스트잇은 맨 앞에
   const key = T ? "t" : "s"+ui.me;
   const mineDone = !T && posts.some(x=>String(x.st.no)===String(ui.me));
-  const n = posts.length; const nStu = new Set(posts.map(x=>x.st.no)).size; const myMain = !T && !!subOf(a.id,+ui.me) && ["submitted","checked"].includes(subOf(a.id,+ui.me).status); const pw = n<=6?230: n<=12?190: n<=20?165: n<=30?145:130;
+  const n = posts.length; const nStu = new Set(posts.filter(x=>!x.st.teacher).map(x=>x.st.no)).size; const myMain = !T && !!subOf(a.id,+ui.me) && ["submitted","checked"].includes(subOf(a.id,+ui.me).status); const pw = n<=6?230: n<=12?190: n<=20?165: n<=30?145:130;
   const cards = posts.map(({st,sub,k})=>{ const h=sub.hearts||{}; const hn=Object.values(h).filter(Boolean).length; const mine = !T && String(st.no)===String(ui.me); const rot=(((st.no*37)%5)-2)*0.7;
-    return `<article class="note${mine?" mine":""}${sub.hasPhoto||(sub.link&&ytId(sub.link))?" has-ph":""}" style="background:var(--pad-${st.no%6});--r:${rot}deg">
-      <button class="note-open" data-act="openPost" data-no="${st.no}" data-k="${k}" aria-label="${st.no}번 ${esc(st.name)} 포스트잇 크게 보기"></button>
-      <div class="who"><span class="n">${st.no}</span><span class="nm">${esc(st.name)}</span>${sub.status==="checked"&&sub.stamp?`<span class="stamp-mini" title="${esc(sub.stamp)}">${esc([...sub.stamp].slice(-2).join(""))}</span>`:""}</div>
+    return `<article class="note${mine?" mine":""}${st.teacher?" tnote":""}${sub.hasPhoto||(sub.link&&ytId(sub.link))?" has-ph":""}" style="${st.teacher?"":`background:var(--pad-${st.no%6});`}--r:${st.teacher?0:rot}deg">
+      <button class="note-open" data-act="openPost" data-no="${st.no}" data-k="${k}" aria-label="${st.teacher?"선생님":st.no+"번 "+esc(st.name)} 포스트잇 크게 보기"></button>
+      <div class="who">${st.teacher?`<span class="n">📌</span><span class="nm">선생님</span>`:`<span class="n">${st.no}</span><span class="nm">${esc(st.name)}</span>`}${sub.status==="checked"&&sub.stamp?`<span class="stamp-mini" title="${esc(sub.stamp)}">${esc([...sub.stamp].slice(-2).join(""))}</span>`:""}</div>
       ${sub.title?`<div class="ntitle">${esc(sub.title)}</div>`:""}
       ${sub.hasPhoto?`<div class="ph-box"><div class="ph-wait" data-photo="${k}">사진…</div></div>`:""}${sub.link?`<div class="nlink">${linkCard(sub.link,!sub.hasPhoto)}</div>`:""}${sub.text?`<div class="txt">${esc(sub.text)}</div>`:""}
       <div class="foot"><button class="heart" data-act="heart" data-id="${k}" aria-pressed="${!!h[key]}" aria-label="좋아요">${h[key]?"❤️":"🤍"} ${hn}</button></div></article>`; }).join("");
   const missing = students().filter(st=>!posts.some(x=>x.st.no===st.no));
   return chips + `<section class="panel"><div class="boardhead"><div style="min-width:0"><h2>${sjTag(a)}${esc(a.title)}</h2><div class="meta"><span>${nStu}/${students().length}명 붙임${n>nStu?` · 포스트잇 ${n}장`:""}</span>${a.due?`<span>마감 ${fmtDate(a.due)}</span>`:""}<span>포스트잇을 누르면 크게 볼 수 있어요</span></div>${a.desc?`<p class="desc">${esc(a.desc)}</p>`:""}</div>
-    <div class="actions">${!T && statusOf(a.id,+ui.me)!=="done" ? `<button class="btn ${myMain?"":"primary"}" data-act="openMy" data-id="${a.id}">${myMain?"첫 포스트잇 고치기":"＋ 나도 붙이기"}</button>`:""}${!T && myMain && !a.closed ? `<button class="btn primary" data-act="openMyMore" data-id="${a.id}">＋ 하나 더 붙이기</button>`:""}${T?`<button class="btn" data-act="editB" data-id="${a.id}">보드 수정</button>`:""}</div></div>
+    <div class="actions">${!T && statusOf(a.id,+ui.me)!=="done" ? `<button class="btn ${myMain?"":"primary"}" data-act="openMy" data-id="${a.id}">${myMain?"첫 포스트잇 고치기":"＋ 나도 붙이기"}</button>`:""}${!T && myMain && !a.closed ? `<button class="btn primary" data-act="openMyMore" data-id="${a.id}">＋ 하나 더 붙이기</button>`:""}${T?`<button class="btn primary" data-act="openMyMore" data-id="${a.id}">📌 선생님 포스트잇 붙이기</button><button class="btn" data-act="editB" data-id="${a.id}">보드 수정</button>`:""}</div></div>
     ${n? `<div class="wall" style="--pw:${pw}px">${cards}</div>` : `<div class="empty"><h3>아직 붙은 포스트잇이 없어요</h3><p>누군가 올리면 여기에 바로 나타나요.</p></div>`}
     ${T && missing.length && n ? `<p class="muted" style="margin:0">아직 안 붙인 친구: ${missing.map(st=>`${st.no} ${esc(st.name)}`).join(", ")}</p>`:""}</section>`;
 }
@@ -1565,9 +1569,9 @@ function renderSheet(){
     <label class="f" for="iqP">한 사람당 답 개수<select class="inp" id="iqP">${[1,2,3,4,5].map(n=>`<option value="${n}" ${(q.per||3)===n?"selected":""}>${n}개</option>`).join("")}</select></label>
     <button class="btn primary" type="submit">${s.id?"저장":"질문 내기"}</button>
     ${s.id ? (ui.confirm==="delIdea" ? `<div class="confirm"><span>이 질문과 모인 답을 모두 지울까요?</span><button class="btn ghost" type="button" data-act="cancelDelIdea">취소</button><button class="btn warn" type="button" data-act="delIdea" data-id="${s.id}">지우기</button></div>` : `<button class="btn ghost" type="button" data-act="askDelIdea">이 질문 삭제</button>`) : ""}</form>`; }
-  if(s.type==="post"){ const a=S.assignments[s.aid]; const st=S.students[s.no]; const k=s.k||`${s.aid}__${s.no}`; const sub=S.submissions[k]; if(!a||!sub){ closeSheet(); return; }
+  if(s.type==="post"){ const a=S.assignments[s.aid]; const st=postSt(s.no); const k=s.k||`${s.aid}__${s.no}`; const sub=S.submissions[k]; if(!a||!sub){ closeSheet(); return; }
     const h=sub.hearts||{}; const key = ui.role==="teacher" ? "t" : "s"+ui.me; const hn=Object.values(h).filter(Boolean).length;
-    body = `<div class="sheet-h"><div><h2>${s.no}번 ${esc(st?.name||"")}</h2><div class="meta"><span>${esc(a.title)}</span><span>${fmt(sub.submittedAt)}</span></div></div><button class="x" data-act="close" aria-label="닫기">×</button></div>
+    body = `<div class="sheet-h"><div><h2>${st?.teacher?"📌 선생님":`${s.no}번 ${esc(st?.name||"")}`}</h2><div class="meta"><span>${esc(a.title)}</span><span>${fmt(sub.submittedAt)}</span></div></div><button class="x" data-act="close" aria-label="닫기">×</button></div>
     ${ui.postEdit ? `<form id="fPostEdit" class="list">
       ${sub.hasPhoto?`<div id="phHolder" class="muted">사진 불러오는 중…</div><div class="seg"><label><input type="checkbox" id="peDel"><span>이 사진 빼기</span></label></div>`:""}
       <label class="f" for="pF">${sub.hasPhoto?"사진 바꾸기 (선택)":"사진 넣기 (선택)"}<input class="inp" id="pF" type="file" accept="image/*"></label><img id="pPrev" class="photo" hidden alt="새 사진 미리보기">
@@ -1581,13 +1585,13 @@ function renderSheet(){
     ${(ui.role==="teacher" || String(ui.me)===String(s.no)) && !(ui.role!=="teacher" && a.closed) ? (ui.confirm==="delPost" ? `<div class="confirm"><span>이 포스트잇을 지울까요? 사진과 글, 좋아요가 모두 사라져요.</span><button class="btn ghost" type="button" data-act="cancelDelPost">취소</button><button class="btn warn" type="button" data-act="delPost" data-id="${k}">지우기</button></div>` : `<div class="actions"><button class="btn" data-act="postEditOn">✏️ 수정</button><button class="btn ghost" data-act="askDelPost">🗑 삭제</button></div>`) : ""}`}
     ${sub.status==="checked"&&sub.stamp?`<div><span class="stampbig">${esc(sub.stamp)}</span></div>`:""}${sub.status==="checked"&&sub.feedback?`<div class="feedback">${esc(sub.feedback)}</div>`:""}
     <div><button class="heart" style="background:var(--bg);font-size:15px;padding:8px 14px" data-act="heart" data-id="${k}" aria-pressed="${!!h[key]}">${h[key]?"❤️":"🤍"} 좋아요 ${hn}</button></div>
-    ${ui.role==="teacher"?`<hr class="divider"><label class="f" for="fb">한마디 (선택)<textarea class="inp" id="fb" style="min-height:70px" placeholder="도장과 함께 보낼 말, 또는 내리는 이유">${esc(sub.feedback||"")}</textarea></label>
+    ${ui.role==="teacher" && !sub.extra?`<hr class="divider"><label class="f" for="fb">한마디 (선택)<textarea class="inp" id="fb" style="min-height:70px" placeholder="도장과 함께 보낼 말, 또는 내리는 이유">${esc(sub.feedback||"")}</textarea></label>
       <div class="okgrid">${OK_STAMPS.map(t=>`<button class="okbtn" data-act="okStamp" data-aid="${s.aid}" data-no="${s.no}" data-t="${esc(t)}" aria-pressed="${sub.status==="checked"&&sub.stamp===t}">${esc(t)}<small>확인 도장</small></button>`).join("")}</div>
       <div class="actions"><button class="btn warn" data-act="returnSub" data-aid="${s.aid}" data-no="${s.no}">↩ 보드에서 내리고 다시 받기</button></div>`:""}`;
   }
-  if(s.type==="my" && s.extra){ const a=S.assignments[s.id]; const me=S.students[ui.me]; if(!a||!me){ closeSheet(); return; }
-    body = `<div class="sheet-h"><div><h2>${esc(a.title)}</h2><div class="meta"><span>포스트잇 한 장 더 붙이기</span></div></div><button class="x" data-act="close" aria-label="닫기">×</button></div>
-    ${a.closed?`<p class="muted">마감된 보드라 더 붙일 수 없어요.</p>`:`<form id="fSubMore" class="list"><label class="f" for="tTi">제목<input class="inp" id="tTi" maxlength="40" placeholder="예: 두 번째 사진"></label>
+  if(s.type==="my" && s.extra){ const a=S.assignments[s.id]; const me=ui.role==="teacher" ? T_ST : S.students[ui.me]; if(!a||!me){ closeSheet(); return; }
+    body = `<div class="sheet-h"><div><h2>${esc(a.title)}</h2><div class="meta"><span>${me.teacher?"📌 선생님 포스트잇 붙이기 (보드 맨 앞에 보여요)":"포스트잇 한 장 더 붙이기"}</span></div></div><button class="x" data-act="close" aria-label="닫기">×</button></div>
+    ${a.closed&&!me.teacher?`<p class="muted">마감된 보드라 더 붙일 수 없어요.</p>`:`<form id="fSubMore" class="list"><label class="f" for="tTi">제목<input class="inp" id="tTi" maxlength="40" placeholder="예: 두 번째 사진"></label>
       ${a.kind!=="text"?`<label class="f" for="pF">사진 (선택)<input class="inp" id="pF" type="file" accept="image/*"></label><img id="pPrev" class="photo" hidden alt="고른 사진 미리보기">`:""}
       ${a.kind!=="photo"?`<label class="f" for="tF">글 (선택)<textarea class="inp" id="tF" placeholder="여기에 써요."></textarea></label>`:""}
       <label class="f" for="lF">링크 (선택)<input class="inp" id="lF" type="text" inputmode="url" placeholder="유튜브나 웹페이지 주소를 붙여 넣어요"></label>
@@ -1901,14 +1905,14 @@ document.addEventListener("submit", async ev => {
   if(f.id==="fAddRow"){ const no=+$("#arNo").value, name=$("#arName").value.trim(); if(!no||!name) return; if(S.students[no]){ toast(`${no}번은 이미 ${S.students[no].name}(으)로 있어요.`); return; } if(await put("students",String(no),{no,name})){ toast(`${no}번 ${name}을(를) 등록했어요.`); renderMain(); setTimeout(()=>$("#arNo")?.focus(),0); } }
   if(f.id==="fBulk"){ const lines=$("#bulkT").value.split(/\n/).map(l=>l.trim()).filter(Boolean); let n=0, bad=[]; for(const l of lines){ const m=l.match(/^(\d+)\s*[.,번)]?\s*(.+)$/); if(!m){ bad.push(l); continue; } const no=+m[1], name=m[2].trim(); if(await put("students",String(no),{no,name})) n++; } ui.bulk = bad.length>0; renderMain(); toast(`${n}명을 등록했어요.${bad.length?` 형식이 맞지 않는 줄 ${bad.length}개는 건너뛰었어요.`:""}`); }
   if(f.id==="fStudent"){ const no=+$("#sN").value, name=$("#sM").value.trim(); if(!no||!name) return; if(!ui.sheet.no && S.students[no]){ toast(`${no}번은 이미 있어요.`); return; } if(await put("students",String(no),{no,name})){ closeSheet(); toast("명단을 저장했어요."); } }
-  if(f.id==="fSubMore"){ const a=S.assignments[ui.sheet.id]; const me=+ui.me; if(!a) return; const pf=$("#pF"), tf=$("#tF"); const src=pf?._src||null; const text=tf?tf.value.trim():"";
+  if(f.id==="fSubMore"){ const a=S.assignments[ui.sheet.id]; const isT = ui.role==="teacher"; const me = isT ? 0 : +ui.me; if(!a) return; const pf=$("#pF"), tf=$("#tF"); const src=pf?._src||null; const text=tf?tf.value.trim():"";
     const title=$("#tTi")?.value.trim()||""; const linkRaw=$("#lF")?.value.trim()||""; const link=safeUrl(linkRaw);
     if(linkRaw && !link){ toast("링크 주소를 다시 확인해 주세요."); return; }
     if(!src && !text && !link && !title){ toast("사진이나 글 중 하나는 넣어 주세요."); return; }
     const btn=$("#subBtn"); btn.disabled=true; btn.textContent="붙이는 중…";
-    const k=`${a.id}__x${uid()}__${me}`;
+    const k = isT ? `${a.id}__t${uid()}__0` : `${a.id}__x${uid()}__${me}`;
     if(src && !(await putPhoto(k,src))){ btn.disabled=false; btn.textContent="붙이기"; return; }
-    if(await put("submissions",k,{aid:a.id,no:me,extra:true,text,title,link,hasPhoto:!!src,status:"submitted",hearts:{},submittedAt:new Date().toISOString()})){ toast("포스트잇을 하나 더 붙였어요!"); closeSheet(); }
+    if(await put("submissions",k,{aid:a.id,no:me,extra:true,...(isT?{teacher:true}:{}),text,title,link,hasPhoto:!!src,status:"submitted",hearts:{},submittedAt:new Date().toISOString()})){ toast(isT?"선생님 포스트잇을 붙였어요. 보드 맨 앞에 보여요.":"포스트잇을 하나 더 붙였어요!"); closeSheet(); }
     else { btn.disabled=false; btn.textContent="붙이기"; } }
   if(f.id==="fSub"){ const a=S.assignments[ui.sheet.id]; const me=+ui.me; const pf=$("#pF"), tf=$("#tF"); const src=pf?._src||null; const text=tf?tf.value.trim():"";
     const title=$("#tTi")?.value.trim()||""; const linkRaw=$("#lF")?.value.trim()||""; const link=safeUrl(linkRaw);
